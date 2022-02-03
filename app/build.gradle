@@ -30,17 +30,6 @@ repositories {
 }
 
 dependencies {
-    implementation 'junit:junit:4.13.1'
-
-    // Use JUnit Jupiter API for testing.
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
-
-    // Use JUnit Jupiter Engine for testing.
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-
-    // This dependency is used by the application.
-    implementation 'com.google.guava:guava:29.0-jre'
-
     // Jackson for JSON.
     implementation 'com.fasterxml.jackson.core:jackson-core:2.11.3'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.3'
@@ -80,9 +69,9 @@ tasks.named('test') {
 }
 
 javadoc {
-    options.addStringOption("locale", "ko_KR");
-    options.addStringOption("encoding", "UTF-8");
-    options.addStringOption("charset", "UTF-8");
-    options.addStringOption("docencoding", "UTF-8");
+    options.addStringOption("locale", "ko_KR")
+    options.addStringOption("encoding", "UTF-8")
+    options.addStringOption("charset", "UTF-8")
+    options.addStringOption("docencoding", "UTF-8")
 }
 tasks.register("prepareKotlinBuildScriptModel") {}
