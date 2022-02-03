@@ -17,10 +17,6 @@ plugins {
 
 sourceCompatibility = '1.8'
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '7.0'
-}
-
 configurations {
     developmentOnly
     runtimeClasspath {
@@ -29,8 +25,8 @@ configurations {
 }
 
 repositories {
-    // Use JCenter for resolving dependencies.
-    jcenter()
+    // Use Maven Central for resolving dependencies.
+    mavenCentral()
 }
 
 dependencies {
@@ -39,8 +35,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.3'
 
     // Lombok
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    compileOnly 'org.projectlombok:lombok:1.18.16'
+    annotationProcessor 'org.projectlombok:lombok:1.18.16'
 
     // Spring Web
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -78,5 +74,4 @@ javadoc {
     options.addStringOption("charset", "UTF-8")
     options.addStringOption("docencoding", "UTF-8")
 }
-
 tasks.register("prepareKotlinBuildScriptModel") {}
