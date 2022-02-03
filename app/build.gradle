@@ -17,10 +17,6 @@ plugins {
 
 sourceCompatibility = '1.8'
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '7.0'
-}
-
 configurations {
     developmentOnly
     runtimeClasspath {
@@ -29,18 +25,29 @@ configurations {
 }
 
 repositories {
-    // Use JCenter for resolving dependencies.
-    jcenter()
+    // Use Maven Central for resolving dependencies.
+    mavenCentral()
 }
 
 dependencies {
+    implementation 'junit:junit:4.13.1'
+
+    // Use JUnit Jupiter API for testing.
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
+
+    // Use JUnit Jupiter Engine for testing.
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+
+    // This dependency is used by the application.
+    implementation 'com.google.guava:guava:29.0-jre'
+
     // Jackson for JSON.
     implementation 'com.fasterxml.jackson.core:jackson-core:2.11.3'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.3'
 
     // Lombok
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    compileOnly 'org.projectlombok:lombok:1.18.16'
+    annotationProcessor 'org.projectlombok:lombok:1.18.16'
 
     // Spring Web
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -73,10 +80,9 @@ tasks.named('test') {
 }
 
 javadoc {
-    options.addStringOption("locale", "ko_KR")
-    options.addStringOption("encoding", "UTF-8")
-    options.addStringOption("charset", "UTF-8")
-    options.addStringOption("docencoding", "UTF-8")
+    options.addStringOption("locale", "ko_KR");
+    options.addStringOption("encoding", "UTF-8");
+    options.addStringOption("charset", "UTF-8");
+    options.addStringOption("docencoding", "UTF-8");
 }
-
 tasks.register("prepareKotlinBuildScriptModel") {}
