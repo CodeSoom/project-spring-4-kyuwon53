@@ -16,7 +16,7 @@ import javax.persistence.Id;
 @Getter
 @NoArgsConstructor
 @Entity
-public class Posts {
+public class Posts extends BaseTimeEntity {
     /**
      * 게시물 아이디
      */
@@ -38,7 +38,7 @@ public class Posts {
 
     /**
      * 게시물 작성자
-      */
+     */
     @Column(nullable = false)
     private String author;
 
