@@ -3,6 +3,7 @@ package com.kyuwon.booklog.service.posts;
 import com.kyuwon.booklog.domain.posts.Posts;
 import com.kyuwon.booklog.domain.posts.PostsRepository;
 import com.kyuwon.booklog.dto.posts.PostsSaveRequestData;
+import com.kyuwon.booklog.dto.posts.PostsUpdateRequestData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 @DisplayName("게시물 관리 ")
@@ -61,6 +60,45 @@ class PostsServiceTest {
                 assertThat(post.getTitle()).isEqualTo(TITLE);
                 assertThat(post.getContent()).isEqualTo(CONTENT);
                 assertThat(post.getAuthor()).isEqualTo(AUTHOR);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("게시물 수정은")
+    class Discribe_update {
+        Posts post;
+        PostsUpdateRequestData updateRequestData;
+        PostsSaveRequestData saveRequestData;
+
+        @Nested
+        @DisplayName("등록된 id가 주어진다면")
+        class Context_when_existed_id {
+            @BeforeEach
+            void setUp() {
+                saveRequestData = PostsSaveRequestData.builder()
+                        .title(TITLE)
+                        .content(CONTENT)
+                        .author(AUTHOR)
+                        .build();
+
+                post = postsService.save(saveRequestData);
+            }
+
+            @Test
+            @DisplayName("id에 해당하는 게시물 정보를 수정하고 리턴한다.")
+            void it_update_post_return() {
+                updateRequestData = PostsUpdateRequestData.builder()
+                        .title(NEW_TITLE)
+                        .content(NEW_CONTENT)
+                        .build();
+
+                Long id = post.getId();
+
+                post = postsService.update(id, updateRequestData);
+
+                assertThat(post.getTitle()).isEqualTo(NEW_TITLE);
+                assertThat(post.getContent()).isEqualTo(NEW_CONTENT);
             }
         }
     }
