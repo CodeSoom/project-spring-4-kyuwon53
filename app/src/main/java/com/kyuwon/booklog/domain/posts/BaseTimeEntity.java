@@ -10,7 +10,7 @@ import javax.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 
 /**
- * 게시물 작성, 수정시 시간을 관리
+ * 게시물 작성, 수정시 시간 모델
  */
 @Getter
 @MappedSuperclass
