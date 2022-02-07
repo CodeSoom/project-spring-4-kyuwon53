@@ -1,5 +1,6 @@
 package com.kyuwon.booklog.dto.posts;
 
+import com.kyuwon.booklog.domain.posts.PostUpdateRequest;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
  */
 @Getter
 @NoArgsConstructor
-public class PostsUpdateRequestData {
+public class PostsUpdateRequestData implements PostUpdateRequest {
     private String title;
     private String content;
 
