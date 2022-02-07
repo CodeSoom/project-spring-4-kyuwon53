@@ -51,11 +51,10 @@ public class Posts extends BaseTimeEntity {
     }
 
     /**
-     * 제목과 내용을 받아 정보를 수정한다.
-     * @param title 수정할 제목
-     * @param content 수정할 내용
+     * 수정 정보를 받아 정보를 수정한다.
+     * @param updateRequestData 수정 정보
      */
-    public void update(PostsUpdateRequestData updateRequestData) {
+    public void update(PostUpdateRequest updateRequestData) {
         this.title = updateRequestData.getTitle();
         this.content = updateRequestData.getContent();
     }
