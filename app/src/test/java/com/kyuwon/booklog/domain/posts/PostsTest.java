@@ -1,5 +1,6 @@
 package com.kyuwon.booklog.domain.posts;
 
+import com.kyuwon.booklog.dto.posts.PostsUpdateRequestData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,13 +21,18 @@ class PostsTest {
     @DisplayName("게시물 수정시")
     class Describe_update {
         Posts posts;
-
+        PostsUpdateRequestData updateRequestData;
         @BeforeEach
         void setUp() {
             posts = Posts.builder()
                     .title(TITLE)
                     .content(CONTENT)
                     .author(AUTHOR)
+                    .build();
+
+            updateRequestData = PostsUpdateRequestData.builder()
+                    .title(NEW_TITLE)
+                    .content(NEW_CONTENT)
                     .build();
         }
 
@@ -35,7 +41,7 @@ class PostsTest {
         class Context_with_title_content {
             @BeforeEach
             void update() {
-              posts.update(NEW_TITLE, NEW_CONTENT);
+              posts.update(updateRequestData);
             }
 
             @Test
