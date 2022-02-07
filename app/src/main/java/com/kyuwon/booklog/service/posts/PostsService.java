@@ -41,7 +41,7 @@ public class PostsService {
         Posts posts = postsRepository.findById(id)
                 .orElseThrow(() -> new PostsNotFoundException(id));
 
-        posts.update(requestData.getTitle(), requestData.getContent());
+        posts.update(requestData);
 
         return posts;
     }
