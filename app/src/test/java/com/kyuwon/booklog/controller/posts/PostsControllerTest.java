@@ -2,12 +2,10 @@ package com.kyuwon.booklog.controller.posts;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kyuwon.booklog.domain.posts.Posts;
 import com.kyuwon.booklog.domain.posts.PostsRepository;
 import com.kyuwon.booklog.dto.posts.PostsSaveRequestData;
 import com.kyuwon.booklog.dto.posts.PostsUpdateRequestData;
 import com.kyuwon.booklog.service.posts.PostsService;
-import com.sun.org.apache.bcel.internal.generic.NEW;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,8 +21,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -122,8 +118,8 @@ class PostsControllerTest {
             @DisplayName("게시물 정보를 수정하고 리턴한다.")
             void it_update_return_post() throws Exception {
                 mockMvc.perform(patch("/posts/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(post))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(post))
                         .andExpect(status().isOk())
                         .andDo(print());
             }
