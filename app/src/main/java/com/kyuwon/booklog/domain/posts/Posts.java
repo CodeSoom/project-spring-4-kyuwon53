@@ -1,6 +1,5 @@
 package com.kyuwon.booklog.domain.posts;
 
-import com.kyuwon.booklog.dto.posts.PostsUpdateRequestData;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -52,6 +51,7 @@ public class Posts extends BaseTimeEntity {
 
     /**
      * 수정 정보를 받아 정보를 수정한다.
+     *
      * @param updateRequestData 수정 정보
      */
     public void update(PostUpdateRequest updateRequestData) {
