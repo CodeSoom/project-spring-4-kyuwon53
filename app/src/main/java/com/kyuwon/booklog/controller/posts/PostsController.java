@@ -2,10 +2,13 @@ package com.kyuwon.booklog.controller.posts;
 
 import com.kyuwon.booklog.domain.posts.Posts;
 import com.kyuwon.booklog.dto.posts.PostsSaveRequestData;
+import com.kyuwon.booklog.dto.posts.PostsUpdateRequestData;
 import com.kyuwon.booklog.service.posts.PostsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,5 +36,18 @@ public class PostsController {
     @ResponseStatus(HttpStatus.CREATED)
     public Posts create(@RequestBody PostsSaveRequestData requestData) {
         return postsService.save(requestData);
+    }
+
+    /**
+     * 요청받은 id의 게시물을 수정한다.
+     *
+     * @param id          수정할 게시물 id
+     * @param requestData 수정된 게시물 정보
+     * @return 수정된 게시물
+     */
+    @PatchMapping("/{id}")
+    public Posts update(@PathVariable Long id,
+                        @RequestBody PostsUpdateRequestData requestData) {
+        return postsService.update(id, requestData);
     }
 }

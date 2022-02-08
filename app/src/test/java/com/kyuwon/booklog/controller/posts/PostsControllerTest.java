@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kyuwon.booklog.domain.posts.PostsRepository;
 import com.kyuwon.booklog.dto.posts.PostsSaveRequestData;
+import com.kyuwon.booklog.dto.posts.PostsUpdateRequestData;
 import com.kyuwon.booklog.service.posts.PostsService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,11 +21,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
-import static org.hamcrest.Matchers.is;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -34,6 +34,8 @@ class PostsControllerTest {
     private static final String TITLE = "테스트 제목";
     private static final String CONTENT = "테스트 내용";
     private static final String AUTHOR = "테스트 저자";
+    private static final String NEW_TITLE = "새로운 제목";
+    private static final String NEW_CONTENT = "새로운 내용";
 
     @Autowired
     private MockMvc mockMvc;
@@ -84,9 +86,41 @@ class PostsControllerTest {
             @DisplayName("게시물을 저장하고 상태코드 Created를 응답한다.")
             void it_return_status_created() throws Exception {
                 mockMvc.perform(post("/posts")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(postSaveReauestData))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(postSaveReauestData))
                         .andExpect(status().isCreated())
+                        .andDo(print());
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("PATCH 요청은")
+    class Describe_patch {
+        String post;
+        Long id;
+        PostsUpdateRequestData updateRequestData;
+
+        @BeforeEach
+        void setUp() throws JsonProcessingException {
+            updateRequestData = PostsUpdateRequestData.builder()
+                    .title(NEW_TITLE)
+                    .content(NEW_CONTENT)
+                    .build();
+
+            post = objectMapper.writeValueAsString(updateRequestData);
+        }
+
+        @Nested
+        @DisplayName("id에 해당하는 게시물이 존재한다면")
+        class Context_with_modify_post_data {
+            @Test
+            @DisplayName("게시물 정보를 수정하고 리턴한다.")
+            void it_update_return_post() throws Exception {
+                mockMvc.perform(patch("/posts/1")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(post))
+                        .andExpect(status().isOk())
                         .andDo(print());
             }
         }

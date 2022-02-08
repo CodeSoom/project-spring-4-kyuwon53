@@ -48,5 +48,15 @@ public class Posts extends BaseTimeEntity {
         this.content = content;
         this.author = author;
     }
+
+    /**
+     * 수정 정보를 받아 정보를 수정한다.
+     *
+     * @param updateRequestData 수정 정보
+     */
+    public void update(PostUpdateRequest updateRequestData) {
+        this.title = updateRequestData.getTitle();
+        this.content = updateRequestData.getContent();
+    }
 }
 
