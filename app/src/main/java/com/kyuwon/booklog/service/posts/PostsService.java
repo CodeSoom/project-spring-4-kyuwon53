@@ -1,9 +1,9 @@
 package com.kyuwon.booklog.service.posts;
 
+import com.kyuwon.booklog.domain.posts.PostUpdateRequest;
 import com.kyuwon.booklog.domain.posts.Posts;
 import com.kyuwon.booklog.domain.posts.PostsRepository;
 import com.kyuwon.booklog.dto.posts.PostsSaveRequestData;
-import com.kyuwon.booklog.dto.posts.PostsUpdateRequestData;
 import com.kyuwon.booklog.errors.PostsNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,7 +37,7 @@ public class PostsService {
      * @return 수정된 게시물
      */
     public Posts update(Long id,
-                        PostsUpdateRequestData requestData) {
+                        PostUpdateRequest requestData) {
         Posts posts = postsRepository.findById(id)
                 .orElseThrow(() -> new PostsNotFoundException(id));
 
