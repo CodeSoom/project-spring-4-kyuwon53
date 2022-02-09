@@ -44,16 +44,17 @@ class PostsSaveRequestDataTest {
     }
 
     @Nested
-    @DisplayName("제목, 내용, 작성자에 null, \"\",\" \" 값이 들어간다면")
+    @DisplayName("제목, 내용, 작성자에 빈 값이 들어간다면")
     class Context_without_title {
+        final String[] emptyValue = new String[]{null, "", "  "};
         PostsSaveRequestData requestData;
 
         @BeforeEach
         void setUp() {
             requestData = PostsSaveRequestData.builder()
-                    .title(null)
-                    .content("")
-                    .author(" ")
+                    .title(emptyValue[0])
+                    .content(emptyValue[1])
+                    .author(emptyValue[2])
                     .build();
         }
 

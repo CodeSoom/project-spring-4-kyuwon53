@@ -2,6 +2,7 @@ package com.kyuwon.booklog.controller.posts;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kyuwon.booklog.domain.posts.Posts;
 import com.kyuwon.booklog.domain.posts.PostsRepository;
 import com.kyuwon.booklog.dto.posts.PostsSaveRequestData;
 import com.kyuwon.booklog.dto.posts.PostsUpdateRequestData;
@@ -21,10 +22,14 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -65,6 +70,35 @@ class PostsControllerTest {
     @AfterEach
     public void clean() {
         postsRepository.deleteAll();
+    }
+
+    @Nested
+    @DisplayName("GET 요청은")
+    class Decribe_GET {
+        @Nested
+        @DisplayName("등록된 게시물이 있다면")
+        class Context_exist_post {
+            final int postCount = 10;
+
+            @BeforeEach
+            void setUp() {
+                List<Posts> postsList = new ArrayList<>();
+
+                for (int i = 0; i < postCount; i++) {
+                    postsController.create(getPost());
+                    postsList.add(getPost().toEntity());
+                }
+                given(postsService.getPosts()).willReturn(postsList);
+            }
+
+            @Test
+            @DisplayName("전체 리스트를 리턴한다.")
+            void it_return_list() throws Exception {
+                mockMvc.perform(get("/posts"))
+                        .andExpect(status().isOk())
+                        .andExpect(content().string(containsString(TITLE)));
+            }
+        }
     }
 
     @Nested

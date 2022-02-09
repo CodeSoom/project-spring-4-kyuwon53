@@ -102,4 +102,51 @@ class PostsServiceTest {
             }
         }
     }
+
+    @Nested
+    @DisplayName("게시물 목록 조회는")
+    class Discribe_getPosts {
+        @Nested
+        @DisplayName("게시물이 존재한다면")
+        class Context_exist_posts {
+            final int postCount = 10;
+
+            @BeforeEach
+            void setUp() {
+                for (int i = 0; i < postCount; i++) {
+                    postsService.save(getPost("" + i));
+                }
+            }
+
+            @DisplayName("게시물 전체 목록을 반환한다.")
+            @Test
+            void it_return_posts() {
+                assertThat(postsService.getPosts()).isNotEmpty();
+                assertThat(postsService.getPosts()).hasSize(postCount);
+            }
+        }
+
+        @Nested
+        @DisplayName("게시물이 존재하지 않는다면")
+        class Context_none_posts {
+            @BeforeEach
+            void setUp() {
+                postsRepository.deleteAll();
+            }
+
+            @DisplayName("빈 리스트를 리턴한다.")
+            @Test
+            void it_return_empty_list() {
+                assertThat(postsService.getPosts()).isEmpty();
+            }
+        }
+    }
+
+    private PostsSaveRequestData getPost(String suffix) {
+        return PostsSaveRequestData.builder()
+                .title(TITLE + suffix)
+                .content(CONTENT)
+                .author(AUTHOR)
+                .build();
+    }
 }
