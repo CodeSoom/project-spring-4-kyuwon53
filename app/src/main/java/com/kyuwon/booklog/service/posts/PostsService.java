@@ -49,8 +49,7 @@ public class PostsService {
      */
     public Posts update(Long id,
                         PostUpdateRequest requestData) {
-        Posts posts = postsRepository.findById(id)
-                .orElseThrow(() -> new PostsNotFoundException(id));
+        Posts posts = getPost(id);
 
         posts.update(requestData);
 
