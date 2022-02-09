@@ -178,8 +178,7 @@ class PostsServiceTest {
             void setUp() {
                 post = postsService.save(getPost("1"));
                 id = post.getId();
-                // TODO: 삭제 기능 구현시 테스트코드 수정
-                postsRepository.deleteAll();
+                postsService.delete(id);
             }
 
             @DisplayName("게시물을 찾을 수 없다는 예외를 던진다.")
@@ -199,16 +198,39 @@ class PostsServiceTest {
         class Context_when_exist_id {
             Posts post;
             Long id;
+
             @BeforeEach
-            void setUp(){
+            void setUp() {
                 post = postsService.save(getPost("1"));
                 id = post.getId();
             }
+
             @Test
             @DisplayName("삭제하고 삭제된 게시물을 리턴한다.")
             void it_return_deleted_post() {
                 Posts result = postsService.delete(id);
                 assertThat(result.getTitle()).isEqualTo(post.getTitle());
+            }
+        }
+
+        @Nested
+        @DisplayName("id에 해당하는 게시물이 없다면")
+        class Context_when_not_exist_id {
+            Posts post;
+            Long id;
+
+            @BeforeEach
+            void setUp() {
+                post = postsService.save(getPost("1"));
+                id = post.getId();
+                postsService.delete(id);
+            }
+
+            @Test
+            @DisplayName("게시물을 찾을 수 없다는 예외를 던진다.")
+            void it_throw_postNotFoundException() {
+                assertThatThrownBy(() -> postsService.delete(id))
+                        .isInstanceOf(PostsNotFoundException.class);
             }
         }
     }
