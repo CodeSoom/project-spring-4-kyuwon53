@@ -31,11 +31,17 @@ public class PostsController {
 
     /**
      * 등록된 게시물의 전체 목록을 리턴한다.
+     *
      * @return 게시물 전체 목록
      */
     @GetMapping
     public List<Posts> list() {
         return postsService.getPosts();
+    }
+
+    @GetMapping("/{id}")
+    public Posts detail(@PathVariable Long id) {
+        return postsService.getPost(id);
     }
 
     /**

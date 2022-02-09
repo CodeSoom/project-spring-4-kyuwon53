@@ -4,6 +4,7 @@ import com.kyuwon.booklog.domain.posts.Posts;
 import com.kyuwon.booklog.domain.posts.PostsRepository;
 import com.kyuwon.booklog.dto.posts.PostsSaveRequestData;
 import com.kyuwon.booklog.dto.posts.PostsUpdateRequestData;
+import com.kyuwon.booklog.errors.PostsNotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @DisplayName("게시물 관리 ")
@@ -141,6 +143,54 @@ class PostsServiceTest {
             }
         }
     }
+
+    @Nested
+    @DisplayName("게시물 상세 조회는")
+    class Describe_getPost {
+        @Nested
+        @DisplayName("id에 해당하는 게시물이 존재하면")
+        class Context_exist_post {
+            Posts post;
+            Long id;
+
+            @BeforeEach
+            void setUp() {
+                post = postsService.save(getPost("1"));
+                id = post.getId();
+            }
+
+            @DisplayName("게시물 상세 정보를 리턴한다.")
+            @Test
+            void it_return_post_detail() {
+                assertThat(postsService.getPost(id).getTitle()).isEqualTo(post.getTitle());
+                assertThat(postsService.getPost(id).getContent()).isEqualTo(post.getContent());
+                assertThat(postsService.getPost(id).getAuthor()).isEqualTo(post.getAuthor());
+            }
+        }
+
+        @Nested
+        @DisplayName("id에 해당하는 게시물이 존재하지 않는다면")
+        class Context_not_exist_post {
+            Posts post;
+            Long id;
+
+            @BeforeEach
+            void setUp() {
+                post = postsService.save(getPost("1"));
+                id = post.getId();
+                // TODO: 삭제 기능 구현시 테스트코드 수정
+                postsRepository.deleteAll();
+            }
+
+            @DisplayName("게시물을 찾을 수 없다는 예외를 던진다.")
+            @Test
+            void it_throw_PostNotFoundException() {
+                assertThatThrownBy(()-> postsService.getPost(id))
+                        .isInstanceOf(PostsNotFoundException.class);
+            }
+        }
+    }
+
 
     private PostsSaveRequestData getPost(String suffix) {
         return PostsSaveRequestData.builder()

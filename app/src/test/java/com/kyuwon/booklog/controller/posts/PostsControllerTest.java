@@ -6,6 +6,7 @@ import com.kyuwon.booklog.domain.posts.Posts;
 import com.kyuwon.booklog.domain.posts.PostsRepository;
 import com.kyuwon.booklog.dto.posts.PostsSaveRequestData;
 import com.kyuwon.booklog.dto.posts.PostsUpdateRequestData;
+import com.kyuwon.booklog.errors.PostsNotFoundException;
 import com.kyuwon.booklog.service.posts.PostsService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +28,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -97,6 +99,41 @@ class PostsControllerTest {
                 mockMvc.perform(get("/posts"))
                         .andExpect(status().isOk())
                         .andExpect(content().string(containsString(TITLE)));
+            }
+        }
+        //TODO: 게시물이 없는 경우 전체 목록 API 테스트
+
+        @Nested
+        @DisplayName("id에 해당하는 게시물이 있다면")
+        class Context_exist_id_post {
+
+            @DisplayName("isOk를 응답한다.")
+            @Test
+            void it_response_status_isOk() throws Exception {
+                mockMvc.perform(get("/posts/" + 1L))
+                        .andExpect(status().isOk());
+
+                verify(postsService).getPost(1L);
+            }
+        }
+
+        @Nested
+        @DisplayName("id에 해당하는 게시물이 없다면")
+        class Context_when_post_is_not_exist {
+            @BeforeEach
+            void setUp() {
+                given(postsService.getPost(0L))
+                        .willThrow(PostsNotFoundException.class);
+            }
+
+            @DisplayName("게시물을 찾을 수 없다는 예외를 던진다.")
+            @Test
+            void it_throw_postNotFoundException() throws Exception {
+                //TODO: 해당 아이디가 없다는 명분 만들기
+                mockMvc.perform(get("/posts/" + 0L))
+                        .andExpect(status().isNotFound());
+
+                verify(postsService).getPost(0L);
             }
         }
     }
