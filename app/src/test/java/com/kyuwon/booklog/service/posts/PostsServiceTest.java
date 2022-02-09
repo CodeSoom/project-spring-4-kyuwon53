@@ -185,12 +185,33 @@ class PostsServiceTest {
             @DisplayName("게시물을 찾을 수 없다는 예외를 던진다.")
             @Test
             void it_throw_PostNotFoundException() {
-                assertThatThrownBy(()-> postsService.getPost(id))
+                assertThatThrownBy(() -> postsService.getPost(id))
                         .isInstanceOf(PostsNotFoundException.class);
             }
         }
     }
 
+    @Nested
+    @DisplayName("게시물 삭제는")
+    class Describe_post_delete {
+        @Nested
+        @DisplayName("id에 해당하는 게시물이 있다면")
+        class Context_when_exist_id {
+            Posts post;
+            Long id;
+            @BeforeEach
+            void setUp(){
+                post = postsService.save(getPost("1"));
+                id = post.getId();
+            }
+            @Test
+            @DisplayName("삭제하고 삭제된 게시물을 리턴한다.")
+            void it_return_deleted_post() {
+                Posts result = postsService.delete(id);
+                assertThat(result.getTitle()).isEqualTo(post.getTitle());
+            }
+        }
+    }
 
     private PostsSaveRequestData getPost(String suffix) {
         return PostsSaveRequestData.builder()
