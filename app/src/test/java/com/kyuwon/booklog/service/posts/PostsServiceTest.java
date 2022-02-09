@@ -142,6 +142,32 @@ class PostsServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("게시물 상세 조회는")
+    class Describe_getPost {
+        @Nested
+        @DisplayName("id에 해당하는 게시물이 존재하면")
+        class Context_exist_post {
+            Posts post;
+            Long id;
+
+            @BeforeEach
+            void setUp() {
+                post = postsService.save(getPost("1"));
+                id = post.getId();
+            }
+
+            @DisplayName("게시물 상세 정보를 리턴한다.")
+            @Test
+            void it_return_post_detail() {
+                assertThat(postsService.getPost(id).getTitle()).isEqualTo(post.getTitle());
+                assertThat(postsService.getPost(id).getContent()).isEqualTo(post.getContent());
+                assertThat(postsService.getPost(id).getAuthor()).isEqualTo(post.getAuthor());
+            }
+        }
+    }
+
+
     private PostsSaveRequestData getPost(String suffix) {
         return PostsSaveRequestData.builder()
                 .title(TITLE + suffix)
