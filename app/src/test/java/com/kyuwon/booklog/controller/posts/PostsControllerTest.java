@@ -27,6 +27,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -97,6 +98,20 @@ class PostsControllerTest {
                 mockMvc.perform(get("/posts"))
                         .andExpect(status().isOk())
                         .andExpect(content().string(containsString(TITLE)));
+            }
+        }
+
+        @Nested
+        @DisplayName("id에 해당하는 게시물이 있다면")
+        class Context_exist_id_post {
+
+            @DisplayName("isOk를 응답한다.")
+            @Test
+            void it_response_status_isOk() throws Exception {
+                mockMvc.perform(get("/posts/" + 1L))
+                        .andExpect(status().isOk());
+
+                verify(postsService).getPost(1L);
             }
         }
     }
