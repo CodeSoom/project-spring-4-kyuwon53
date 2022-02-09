@@ -30,6 +30,18 @@ public class PostsService {
     }
 
     /**
+     * id에 해당하는 게시물을 리턴한다.
+     *
+     * @param id 해당 게시물 id
+     * @return 조회한 게시물
+     * @throws PostsNotFoundException id에 해당하는 게시물을 찾지 못한 경우
+     */
+    public Posts getPost(Long id) {
+        return postsRepository.findById(id)
+                .orElseThrow(() -> new PostsNotFoundException(id));
+    }
+
+    /**
      * 게시물 정보를 받아 저장하고 등록된 게시물을 리턴한다.
      *
      * @param postsSaveRequestData 게시물 정보
@@ -57,14 +69,15 @@ public class PostsService {
     }
 
     /**
-     * id에 해당하는 게시물을 리턴한다.
+     * id에 해당하는 게시물을 삭제한다.
      *
-     * @param id 해당 게시물 id
-     * @return 조회한 게시물
+     * @param id 삭제할 게시물 id
+     * @return 삭제된 게시물
      * @throws PostsNotFoundException id에 해당하는 게시물을 찾지 못한 경우
      */
-    public Posts getPost(Long id) {
-        return postsRepository.findById(id)
-                .orElseThrow(() -> new PostsNotFoundException(id));
+    public Posts delete(Long id) {
+        Posts post = getPost(id);
+        postsRepository.delete(post);
+        return post;
     }
 }
