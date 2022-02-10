@@ -13,11 +13,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -34,7 +36,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@ExtendWith(SpringExtension.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @DisplayName("상품 등록 컨트롤러")
 class PostsControllerTest {
@@ -101,7 +104,26 @@ class PostsControllerTest {
                         .andExpect(content().string(containsString(TITLE)));
             }
         }
-        //TODO: 게시물이 없는 경우 전체 목록 API 테스트
+
+        @Nested
+        @DisplayName("등록된 게시물이 없다면")
+        class Context_not_exist_post {
+            @BeforeEach
+            void setUp() {
+                List<Posts> postsList = postsController.list();
+                postsList.forEach(post -> postsController.delete(post.getId()));
+            }
+
+            @Test
+            @DisplayName("빈 리스트를 리턴한다.")
+            void it_return_empty_list() throws Exception {
+                given(postsService.getPosts()).willReturn(new ArrayList<>());
+
+                mockMvc.perform(get("/posts"))
+                        .andExpect(status().isOk())
+                        .andExpect(content().string(containsString("")));
+            }
+        }
 
         @Nested
         @DisplayName("id에 해당하는 게시물이 있다면")
