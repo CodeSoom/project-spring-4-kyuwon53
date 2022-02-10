@@ -40,26 +40,17 @@ class PostsServiceTest {
     @DisplayName("게시물 저장은")
     class Discribe_save {
         Posts post;
-        PostsSaveRequestData postsSaveRequestData;
 
         @Nested
         @DisplayName("게시물을 입력받으면")
         class Context_when_post {
-            @BeforeEach
-            void setUp() {
-                postsSaveRequestData = PostsSaveRequestData.builder()
-                        .title(TITLE)
-                        .content(CONTENT)
-                        .author(AUTHOR)
-                        .build();
-            }
 
             @Test
             @DisplayName("저장하고 게시물을 리턴한다.")
             void it_return_post() {
-                post = postsService.save(postsSaveRequestData);
+                post = postsService.save(getPost("1"));
 
-                assertThat(post.getTitle()).isEqualTo(TITLE);
+                assertThat(post.getTitle()).isEqualTo(TITLE+"1");
                 assertThat(post.getContent()).isEqualTo(CONTENT);
                 assertThat(post.getAuthor()).isEqualTo(AUTHOR);
             }
@@ -71,20 +62,13 @@ class PostsServiceTest {
     class Discribe_update {
         Posts post;
         PostsUpdateRequestData updateRequestData;
-        PostsSaveRequestData saveRequestData;
 
         @Nested
         @DisplayName("등록된 id가 주어진다면")
         class Context_when_existed_id {
             @BeforeEach
             void setUp() {
-                saveRequestData = PostsSaveRequestData.builder()
-                        .title(TITLE)
-                        .content(CONTENT)
-                        .author(AUTHOR)
-                        .build();
-
-                post = postsService.save(saveRequestData);
+                post = postsService.save(getPost("1"));
             }
 
             @Test
