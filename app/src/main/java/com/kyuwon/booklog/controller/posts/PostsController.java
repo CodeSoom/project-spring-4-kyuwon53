@@ -7,6 +7,7 @@ import com.kyuwon.booklog.service.posts.PostsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -57,7 +58,7 @@ public class PostsController {
     }
 
     /**
-     * 요청받은 id의 게시물을 수정한다.
+     * 요청받은 id의 게시물을 수정하고 리턴한다.
      *
      * @param id          수정할 게시물 id
      * @param requestData 수정된 게시물 정보
@@ -67,5 +68,17 @@ public class PostsController {
     public Posts update(@PathVariable Long id,
                         @RequestBody PostsUpdateRequestData requestData) {
         return postsService.update(id, requestData);
+    }
+
+    /**
+     * 요청받은 id의 게시물을 삭제하고 리턴한다.
+     *
+     * @param id 삭제할 게시물 id
+     * @return 삭제된 게시물
+     */
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Posts delete(@PathVariable Long id) {
+        return postsService.delete(id);
     }
 }

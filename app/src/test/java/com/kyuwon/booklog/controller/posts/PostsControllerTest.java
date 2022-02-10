@@ -197,6 +197,28 @@ class PostsControllerTest {
         }
     }
 
+    @Nested
+    @DisplayName("DELETE 요청은")
+    class Describe_delete {
+        @Nested
+        @DisplayName("id에 해당하는 게시물이 존재하면")
+        class Context_when_exist_id_post {
+            Posts post;
+
+            @BeforeEach
+            void setUp() {
+                post = postsController.create(getPost());
+            }
+
+            @Test
+            @DisplayName("게시물을 삭제하고 NOCONTENT를 응답한다.")
+            void it_return_Status_NOCONTENT() throws Exception {
+                mockMvc.perform(delete("/posts/" + 1L))
+                        .andExpect(status().isNoContent());
+            }
+        }
+    }
+
     private PostsSaveRequestData getPost() {
         return PostsSaveRequestData.builder()
                 .title(TITLE)
