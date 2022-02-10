@@ -58,7 +58,7 @@ public class PostsController {
     }
 
     /**
-     * 요청받은 id의 게시물을 수정한다.
+     * 요청받은 id의 게시물을 수정하고 리턴한다.
      *
      * @param id          수정할 게시물 id
      * @param requestData 수정된 게시물 정보
@@ -71,7 +71,7 @@ public class PostsController {
     }
 
     /**
-     * 요청받은 id의 게시물을 삭제하고 204을 응답한다.
+     * 요청받은 id의 게시물을 삭제하고 리턴한다.
      *
      * @param id 삭제할 게시물 id
      * @return 삭제된 게시물
