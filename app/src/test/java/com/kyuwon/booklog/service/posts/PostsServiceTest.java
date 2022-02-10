@@ -103,6 +103,33 @@ class PostsServiceTest {
                 assertThat(post.getContent()).isEqualTo(NEW_CONTENT);
             }
         }
+
+        @Nested
+        @DisplayName("등록되지 않은 id가 주어진다면")
+        class Context_when_not_existed_id {
+            Long id;
+
+            @BeforeEach
+            void setUp() {
+                Posts post = postsService.save(getPost("1"));
+
+                id = post.getId();
+
+                postsService.delete(id);
+            }
+
+            @Test
+            @DisplayName("해당 게시물을 찾을 수 없다는 예외를 던진다.")
+            void it_throw_postNotFoundException() {
+                updateRequestData = PostsUpdateRequestData.builder()
+                        .title(NEW_TITLE)
+                        .content(NEW_CONTENT)
+                        .build();
+
+                assertThatThrownBy(() -> postsService.update(id, updateRequestData))
+                        .isInstanceOf(PostsNotFoundException.class);
+            }
+        }
     }
 
     @Nested
