@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -108,20 +109,19 @@ class PostsControllerTest {
         @Nested
         @DisplayName("등록된 게시물이 없다면")
         class Context_not_exist_post {
+            private static final String EMPTY_LIST = "[]";
+
             @BeforeEach
             void setUp() {
-                List<Posts> postsList = postsController.list();
-                postsList.forEach(post -> postsController.delete(post.getId()));
+                postsRepository.deleteAll();
             }
 
             @Test
             @DisplayName("빈 리스트를 리턴한다.")
             void it_return_empty_list() throws Exception {
-                given(postsService.getPosts()).willReturn(new ArrayList<>());
-
                 mockMvc.perform(get("/posts"))
                         .andExpect(status().isOk())
-                        .andExpect(content().string(containsString("")));
+                        .andExpect(content().string(containsString(EMPTY_LIST)));
             }
         }
 
@@ -129,9 +129,14 @@ class PostsControllerTest {
         @DisplayName("id에 해당하는 게시물이 있다면")
         class Context_exist_id_post {
 
-            @DisplayName("isOk를 응답한다.")
+            @BeforeEach
+            void setUp() {
+                preparePost();
+            }
+
+            @DisplayName("게시물을 응답한다.")
             @Test
-            void it_response_status_isOk() throws Exception {
+            void it_response_post() throws Exception {
                 mockMvc.perform(get("/posts/" + 1L))
                         .andExpect(status().isOk());
 
@@ -142,20 +147,23 @@ class PostsControllerTest {
         @Nested
         @DisplayName("id에 해당하는 게시물이 없다면")
         class Context_when_post_is_not_exist {
+            Long id;
+
             @BeforeEach
             void setUp() {
-                given(postsService.getPost(0L))
+                Posts source = preparePost();
+                id = source.getId();
+                postsRepository.deleteById(id);
+
+                given(postsService.getPost(any(Long.class)))
                         .willThrow(PostsNotFoundException.class);
             }
 
             @DisplayName("게시물을 찾을 수 없다는 예외를 던진다.")
             @Test
             void it_throw_postNotFoundException() throws Exception {
-                //TODO: 해당 아이디가 없다는 명분 만들기
-                mockMvc.perform(get("/posts/" + 0L))
+                mockMvc.perform(get("/posts/" + id))
                         .andExpect(status().isNotFound());
-
-                verify(postsService).getPost(0L);
             }
         }
     }
@@ -190,29 +198,37 @@ class PostsControllerTest {
     @Nested
     @DisplayName("PATCH 요청은")
     class Describe_patch {
-        String post;
-        Long id;
-        PostsUpdateRequestData updateRequestData;
-
-        @BeforeEach
-        void setUp() throws JsonProcessingException {
-            updateRequestData = PostsUpdateRequestData.builder()
-                    .title(NEW_TITLE)
-                    .content(NEW_CONTENT)
-                    .build();
-
-            post = objectMapper.writeValueAsString(updateRequestData);
-        }
 
         @Nested
         @DisplayName("id에 해당하는 게시물이 존재한다면")
         class Context_with_modify_post_data {
+            String updatePostdata;
+            Long id;
+            PostsUpdateRequestData updateRequestData;
+            Posts post;
+
+            @BeforeEach
+            void setUp() throws JsonProcessingException {
+                post = preparePost();
+                id = post.getId();
+
+                updateRequestData = PostsUpdateRequestData.builder()
+                        .title(NEW_TITLE)
+                        .content(NEW_CONTENT)
+                        .build();
+
+                updatePostdata = objectMapper.writeValueAsString(updateRequestData);
+
+                given(postsService.update(id, updateRequestData))
+                        .willReturn(post);
+            }
+
             @Test
             @DisplayName("게시물 정보를 수정하고 리턴한다.")
             void it_update_return_post() throws Exception {
-                mockMvc.perform(patch("/posts/1")
+                mockMvc.perform(patch("/posts/" + id)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(post))
+                                .content(updatePostdata))
                         .andExpect(status().isOk())
                         .andDo(print());
             }
@@ -247,5 +263,9 @@ class PostsControllerTest {
                 .content(CONTENT)
                 .author(AUTHOR)
                 .build();
+    }
+
+    private Posts preparePost() {
+        return postsRepository.save(getPost().toEntity());
     }
 }
