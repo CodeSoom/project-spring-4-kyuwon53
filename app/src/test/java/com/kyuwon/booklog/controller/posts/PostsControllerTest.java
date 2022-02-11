@@ -128,19 +128,21 @@ class PostsControllerTest {
         @Nested
         @DisplayName("id에 해당하는 게시물이 있다면")
         class Context_exist_id_post {
+            Long id;
 
             @BeforeEach
             void setUp() {
-                preparePost();
+                Posts post = preparePost();
+                id = post.getId();
             }
 
             @DisplayName("게시물을 응답한다.")
             @Test
             void it_response_post() throws Exception {
-                mockMvc.perform(get("/posts/" + 1L))
+                mockMvc.perform(get("/posts/" + id))
                         .andExpect(status().isOk());
 
-                verify(postsService).getPost(1L);
+                verify(postsService).getPost(id);
             }
         }
 
@@ -242,16 +244,18 @@ class PostsControllerTest {
         @DisplayName("id에 해당하는 게시물이 존재하면")
         class Context_when_exist_id_post {
             Posts post;
+            Long id;
 
             @BeforeEach
             void setUp() {
-                post = postsController.create(getPost());
+                post = preparePost();
+                id = post.getId();
             }
 
             @Test
             @DisplayName("게시물을 삭제하고 NOCONTENT를 응답한다.")
             void it_return_Status_NOCONTENT() throws Exception {
-                mockMvc.perform(delete("/posts/" + 1L))
+                mockMvc.perform(delete("/posts/" + id))
                         .andExpect(status().isNoContent());
             }
         }
