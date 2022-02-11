@@ -259,6 +259,29 @@ class PostsControllerTest {
                         .andExpect(status().isNoContent());
             }
         }
+
+        @Nested
+        @DisplayName("id에 해당하는 게시물이 없다면")
+        class Context_when_not_exist_id_post {
+            Long id;
+
+            @BeforeEach
+            void setUp() {
+                Posts post = preparePost();
+                id = post.getId();
+                postsRepository.deleteById(id);
+
+                given(postsService.delete(id))
+                        .willThrow(PostsNotFoundException.class);
+            }
+
+            @Test
+            @DisplayName("게시물을 찾을 수 없다는 예외를 던진다.")
+            void it_throw_PostNotFoundException() throws Exception {
+                mockMvc.perform(delete("/posts/"+id))
+                        .andExpect(status().isNotFound());
+            }
+        }
     }
 
     private PostsSaveRequestData getPost() {
