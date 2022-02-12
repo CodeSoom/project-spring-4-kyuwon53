@@ -1,6 +1,7 @@
 package com.kyuwon.booklog.domain.user;
 
 import com.kyuwon.booklog.domain.posts.BaseTimeEntity;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
@@ -59,5 +60,14 @@ public class User extends BaseTimeEntity {
      */
     public String getRoleKey() {
         return this.role.getKey();
+    }
+
+    @Builder
+    public User(String name, String email, String password, String picture, Role role) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.picture = picture;
+        this.role = role;
     }
 }
