@@ -1,6 +1,5 @@
 package com.kyuwon.booklog.controller.user;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.kyuwon.booklog.domain.user.User;
@@ -20,10 +19,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
-import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -32,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class UserControllerTest {
     private static final String NAME = "테스트 이름";
     private static final String EMAIL = "test@email.com";
-    private static final String PASSWORD = "테스트 비밀번호";
+    private static final String PASSWORD = "1234abcd";
     private static final String PICTURE = "테스트 사진";
 
     @Autowired
@@ -64,12 +61,13 @@ class UserControllerTest {
             void setUp() {
                 userSaveRequestData = getUserSaveData();
             }
+
             @Test
             @DisplayName("사용자를 저장하고 Created를 응답한다.")
             void it_response_status_created() throws Exception {
                 mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userSaveRequestData)))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(userSaveRequestData)))
                         .andExpect(status().isCreated())
                         .andDo(print());
             }
