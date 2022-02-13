@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 /**
@@ -19,19 +20,19 @@ public class UserSaveRequestData {
     /**
      * 사용자 이름
      */
-    @NotBlank
+    @NotBlank(message = "이름은 필수입니다.")
     private String name;
     /**
      * 사용자 이메일
      */
-    @NotBlank
-    @Email
+    @NotBlank(message = "이메일은 필수입니다.")
+    @Email(message = "이메일 형식이 아닙니다.")
     private String email;
     /**
      * 사용자 비밀번호
      */
-    @NotBlank
-    @Size(min = 8, max = 1024)
+    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,20}",
+            message = "비밀번호는 영어와 숫자를 포함해서 8~20자리 이내로 입력하세요.")
     private String password;
     /**
      * 사용자 프로필 사진
