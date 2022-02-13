@@ -1,5 +1,6 @@
 package com.kyuwon.booklog.dto.user;
 
+import com.kyuwon.booklog.domain.user.Role;
 import com.kyuwon.booklog.domain.user.User;
 import lombok.Builder;
 import lombok.Getter;
@@ -52,6 +53,8 @@ public class UserSaveRequestData {
                 .email(email)
                 .password(password)
                 .picture(picture)
+                //TODO 권한 부여 바꾸기
+                .role(Role.USER)
                 .build();
     }
 }
