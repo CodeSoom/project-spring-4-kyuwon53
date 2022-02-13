@@ -4,6 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -22,8 +25,6 @@ class UserSaveRequestDataTest {
     private final static String EMAIL = "email@gmail.com";
     private final static String PASSWORD = "testpassword1234";
     private final static String PICTURE = "picture";
-
-    private final static String WRONG_EMAIL = "emailgmail.com";
 
     private Validator validator;
     private static ValidatorFactory validatorFactory;
@@ -52,22 +53,19 @@ class UserSaveRequestDataTest {
         @Nested
         @DisplayName("필수 입력 값에 빈 값이 들어간다면")
         class Context_without_data {
-            final String[] emptyValues = new String[]{null, "", " "};
             UserSaveRequestData saveRequestData;
 
-            @BeforeEach
-            void setUp() {
-                saveRequestData = UserSaveRequestData.builder()
-                        .email(emptyValues[0])
-                        .name(emptyValues[1])
-                        .password(emptyValues[2])
-                        .picture(emptyValues[0])
-                        .build();
-            }
-
-            @Test
+            @ParameterizedTest
+            @NullAndEmptySource
             @DisplayName("validator에 걸리고 메세지를 출력한다.")
-            public void it_validation() {
+            public void it_validation(String empty) {
+                saveRequestData = UserSaveRequestData.builder()
+                        .email(empty)
+                        .name(empty)
+                        .password(empty)
+                        .picture(empty)
+                        .build();
+
                 Set<ConstraintViolation<UserSaveRequestData>> violations = validator.validate(saveRequestData);
 
                 Iterator<ConstraintViolation<UserSaveRequestData>> iterator = violations.iterator();
@@ -81,7 +79,7 @@ class UserSaveRequestDataTest {
                 assertThat(violations).isNotEmpty();
                 assertThat(messages).contains("이름은 필수입니다.",
                         "이메일은 필수입니다.",
-                        "비밀번호는 영어와 숫자를 포함해서 8~20자리 이내로 입력하세요.");
+                        "비밀번호는 필수입니다.");
             }
         }
     }
@@ -91,19 +89,16 @@ class UserSaveRequestDataTest {
     class Context_when_wrong_email {
         private UserSaveRequestData saveRequestData;
 
-        @BeforeEach
-        void setUp() {
+        @DisplayName("이메일 형식이 잘못됐다는 메세지가 나온다.")
+        @ParameterizedTest
+        @ValueSource(strings = {"asdfga", "asf@", "@sf", "sfa.com", "@safa.com"})
+        void it_return_wrong_email_pattern(String email) {
             saveRequestData = UserSaveRequestData.builder()
-                    .email(WRONG_EMAIL)
+                    .email(email)
                     .name(NAME)
                     .password(PASSWORD)
                     .picture(PICTURE)
                     .build();
-        }
-
-        @Test
-        @DisplayName("이메일 형식이 잘못됐다는 메세지가 나온다.")
-        void it_return_wrong_email_pattern() {
             Set<ConstraintViolation<UserSaveRequestData>> violations = validator.validate(saveRequestData);
             Iterator<ConstraintViolation<UserSaveRequestData>> iterator = violations.iterator();
             List<String> messages = new ArrayList<>();
@@ -115,5 +110,39 @@ class UserSaveRequestDataTest {
             assertThat(messages).contains("이메일 형식이 아닙니다.");
         }
     }
-//TODO 비밀번호 경계값 테스트
+
+    //TODO 비밀번호 경계값 테스트
+    @Nested
+    @DisplayName("비밀번호 형식에 맞지 않는 값이 들어오면")
+    class Context_when_password_size_min {
+        private UserSaveRequestData saveRequestData;
+
+        @DisplayName("검증에 걸리고 잘못된 값이라는 메세지가 나온다.")
+        @ParameterizedTest
+        @ValueSource(strings = {"123",
+                "12345678",
+                "abcdefgh",
+                "123456789012345678901",
+                "abcdefghijklmnopqrstuwxyz",
+                "1234567890abcdefghkro"
+        })
+        void it_return_wrong_password_size(String password) {
+            saveRequestData = UserSaveRequestData.builder()
+                    .email(EMAIL)
+                    .name(NAME)
+                    .password(password)
+                    .picture(PICTURE)
+                    .build();
+
+            Set<ConstraintViolation<UserSaveRequestData>> violations = validator.validate(saveRequestData);
+            Iterator<ConstraintViolation<UserSaveRequestData>> iterator = violations.iterator();
+            List<String> messages = new ArrayList<>();
+
+            while (iterator.hasNext()) {
+                ConstraintViolation<UserSaveRequestData> next = iterator.next();
+                messages.add(next.getMessage());
+            }
+            assertThat(messages).contains("비밀번호는 영어와 숫자를 포함해서 8~20자리 이내로 입력하세요.");
+        }
+    }
 }
