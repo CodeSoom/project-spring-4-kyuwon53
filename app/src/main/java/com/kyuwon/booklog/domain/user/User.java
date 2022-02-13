@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
@@ -19,6 +20,7 @@ import javax.persistence.Id;
 @Getter
 @NoArgsConstructor
 @EnableJpaAuditing
+@Entity
 public class User extends BaseTimeEntity {
     /**
      * 사용자 식별자
