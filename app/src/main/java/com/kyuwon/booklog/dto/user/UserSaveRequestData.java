@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 
 /**
  * 사용자 생성 모델
@@ -32,13 +31,12 @@ public class UserSaveRequestData {
      * 사용자 비밀번호
      */
     @NotBlank(message = "비밀번호는 필수입니다.")
-    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,20}",
-            message = "비밀번호는 영어와 숫자를 포함해서 8~20자리 이내로 입력하세요.")
+    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,20}",
+            message = "비밀번호는 영어와 숫자,특수문자(!@#$%^&*)를 포함해서 8~20자리 이내로 입력하세요.")
     private String password;
     /**
      * 사용자 프로필 사진
      */
-
     private String picture;
 
     @Builder
