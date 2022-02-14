@@ -79,7 +79,9 @@ public class PostsRepositoryTest {
             void it_return_current_time() {
                 List<Posts> postsList = postsRepository.findAll();
 
-                Posts posts = postsList.get(0);
+                int index = postsList.size() - 1;
+
+                Posts posts = postsList.get(index);
 
                 assertThat(posts.getCreatedDate()).isAfter(now);
                 assertThat(posts.getModifiedDate()).isAfter(now);
