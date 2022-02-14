@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class UserSaveRequestDataTest {
     private final static String NAME = "name";
     private final static String EMAIL = "email@gmail.com";
-    private final static String PASSWORD = "testpassword1234";
+    private final static String PASSWORD = "testpassword1234*";
     private final static String PICTURE = "picture";
 
     private Validator validator;
@@ -124,7 +124,9 @@ class UserSaveRequestDataTest {
                 "abcdefgh",
                 "123456789012345678901",
                 "abcdefghijklmnopqrstuwxyz",
-                "1234567890abcdefghkro"
+                "1234567890abcdefghkro",
+                "!@#$%^&*!@#$%^&*",
+                "test1234="
         })
         void it_return_wrong_password_size(String password) {
             saveRequestData = UserSaveRequestData.builder()
@@ -142,7 +144,7 @@ class UserSaveRequestDataTest {
                 ConstraintViolation<UserSaveRequestData> next = iterator.next();
                 messages.add(next.getMessage());
             }
-            assertThat(messages).contains("비밀번호는 영어와 숫자를 포함해서 8~20자리 이내로 입력하세요.");
+            assertThat(messages).contains("비밀번호는 영어와 숫자,특수문자(!@#$%^&*)를 포함해서 8~20자리 이내로 입력하세요.");
         }
     }
 }
