@@ -1,7 +1,7 @@
 package com.kyuwon.booklog.errors;
 
 /**
- * 이메일이 중복됐다는 예외 클래스
+ * 중복된 이메일을 발견했을 때 던집니다.
  */
 public class UserEmailDuplicationException extends RuntimeException {
     /**
