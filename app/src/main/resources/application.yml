@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:h2:~/data/booklog
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+jwt:
+  secret: thisisabooklogscretkeykyuwonsdfs
