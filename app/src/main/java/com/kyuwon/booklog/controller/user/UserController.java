@@ -1,7 +1,7 @@
 package com.kyuwon.booklog.controller.user;
 
 import com.kyuwon.booklog.domain.user.User;
-import com.kyuwon.booklog.dto.user.UserResultData;
+import com.kyuwon.booklog.dto.user.UserData;
 import com.kyuwon.booklog.dto.user.UserSaveRequestData;
 import com.kyuwon.booklog.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class UserController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    UserResultData signUp(@RequestBody @Valid UserSaveRequestData saveRequestData) {
+    UserData signUp(@RequestBody @Valid UserSaveRequestData saveRequestData) {
         User user = userService.signUp(saveRequestData);
         return getUserResultData(user);
     }
@@ -41,8 +41,8 @@ public class UserController {
      * @param user 사용자 정보
      * @return 응답 결과
      */
-    private UserResultData getUserResultData(User user) {
-        return UserResultData.builder()
+    private UserData getUserResultData(User user) {
+        return UserData.builder()
                 .email(user.getEmail())
                 .name(user.getName())
                 .picture(user.getPicture())
