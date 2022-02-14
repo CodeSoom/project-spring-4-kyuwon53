@@ -10,8 +10,17 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     /**
      * email에 해당하는 사용자를 찾는다.
+     *
      * @param email
      * @return email에 해당하는 사용자
      */
     Optional<User> findByEmail(String email);
+
+    /**
+     * 등록된 회원이라면 true, 등록된 회원이 아니면 false를 리턴한다.
+     *
+     * @param email 회원 이메일
+     * @return 등록된 회원 true, 미등록은 false
+     */
+    boolean existsByEmail(String email);
 }

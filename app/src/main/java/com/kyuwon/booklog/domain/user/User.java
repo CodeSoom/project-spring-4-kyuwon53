@@ -1,11 +1,13 @@
 package com.kyuwon.booklog.domain.user;
 
 import com.kyuwon.booklog.domain.posts.BaseTimeEntity;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
@@ -18,6 +20,7 @@ import javax.persistence.Id;
 @Getter
 @NoArgsConstructor
 @EnableJpaAuditing
+@Entity
 public class User extends BaseTimeEntity {
     /**
      * 사용자 식별자
@@ -59,5 +62,14 @@ public class User extends BaseTimeEntity {
      */
     public String getRoleKey() {
         return this.role.getKey();
+    }
+
+    @Builder
+    public User(String name, String email, String password, String picture, Role role) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.picture = picture;
+        this.role = role;
     }
 }

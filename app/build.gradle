@@ -49,6 +49,10 @@ dependencies {
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client:2.7.2'
 
+    // Spring Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.security:spring-security-test'
+
     // Spring Developer Tools
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
