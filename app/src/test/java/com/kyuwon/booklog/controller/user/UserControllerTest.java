@@ -3,6 +3,7 @@ package com.kyuwon.booklog.controller.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.kyuwon.booklog.domain.user.User;
+import com.kyuwon.booklog.domain.user.UserRepository;
 import com.kyuwon.booklog.dto.user.UserSaveRequestData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,6 +39,9 @@ class UserControllerTest {
     @Autowired
     private WebApplicationContext wac;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
@@ -47,6 +51,7 @@ class UserControllerTest {
                 .build();
 
         objectMapper.registerModule(new JavaTimeModule());
+        userRepository.deleteAll();
     }
 
     @Nested
@@ -84,7 +89,9 @@ class UserControllerTest {
     }
 
     private User prepareUser(UserSaveRequestData saveRequestData) throws Exception {
-        ResultActions actions = mockMvc.perform(post("/users"));
+        ResultActions actions = mockMvc.perform(post("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(saveRequestData)));
 
         MvcResult mvcResult = actions.andReturn();
         String content = mvcResult.getResponse().getContentAsString();
