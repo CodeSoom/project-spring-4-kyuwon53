@@ -6,7 +6,7 @@ import com.kyuwon.booklog.domain.user.User;
 import com.kyuwon.booklog.domain.user.UserRepository;
 import com.kyuwon.booklog.dto.user.UserLoginData;
 import com.kyuwon.booklog.dto.user.UserSaveRequestData;
-import org.junit.jupiter.api.AfterEach;
+import com.kyuwon.booklog.service.session.AuthenticationServiceTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -32,8 +32,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @DisplayName("세션 요청")
 class SessionControllerTest {
-    private static final String TOKEN_REGEX = "^[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.?[A-Za-z0-9-_.+/=]*$";
-
     @Autowired
     private MockMvc mockMvc;
 
@@ -44,6 +42,8 @@ class SessionControllerTest {
     private UserRepository userRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private AuthenticationServiceTest authenticationServiceTest;
 
     @BeforeEach
     void setUp() {
@@ -57,20 +57,24 @@ class SessionControllerTest {
     @Nested
     @DisplayName("로그인 요청은")
     class Describe_login {
+        private User user;
+
+        @BeforeEach
+        void setUp() throws Exception {
+            userRepository.deleteAll();
+            user = prepareUser(getUserSaveData());
+        }
+
         @Nested
         @DisplayName("올바른 사용자 정보가 주어지면")
-        class Context {
+        class Context_with_user {
             private UserLoginData userLoginData;
-            private User user;
 
             @BeforeEach
-            void setUp() throws Exception {
-                userRepository.deleteAll();
-
-                user = prepareUser(getUserSaveData());
+            void prepareData() throws Exception {
                 userLoginData = UserLoginData.builder()
-                        .email("test@email.com")
-                        .password("1234test*")
+                        .email(user.getEmail())
+                        .password(user.getPassword())
                         .build();
             }
 
@@ -82,8 +86,30 @@ class SessionControllerTest {
                                 .content(objectMapper.writeValueAsString(userLoginData)))
                         .andDo(print())
                         .andExpect(status().isCreated())
-                        .andExpect(jsonPath("$.accessToken", matchesPattern(TOKEN_REGEX)));
-                ;
+                        .andExpect(jsonPath("$.accessToken", matchesPattern(authenticationServiceTest.TOKEN_REGEX)));
+            }
+        }
+
+        @Nested
+        @DisplayName("존재하지 않은 사용자 정보가 주어지면")
+        class Context_with_wrong_user {
+            private UserLoginData userLoginWrongData;
+
+            @BeforeEach
+            void prepareWrongData() {
+                userLoginWrongData = UserLoginData.builder()
+                        .email(user.getEmail() + "x")
+                        .password(user.getPassword() + "x")
+                        .build();
+            }
+
+            @Test
+            @DisplayName("잘못된 요청이라고 응답한다.")
+            void it_response_not_found_exception() throws Exception {
+                mockMvc.perform(post("/session")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsBytes(userLoginWrongData)))
+                        .andExpect(status().isBadRequest());
             }
         }
     }
