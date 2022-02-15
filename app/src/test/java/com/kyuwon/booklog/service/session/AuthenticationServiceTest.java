@@ -16,13 +16,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @DisplayName("회원 인증 처리")
-class AuthenticationServiceTest {
+public class AuthenticationServiceTest {
     @Autowired
     private AuthenticationService authenticationService;
     @Autowired
     private UserRepository userRepository;
 
-    private static final String TOKEN_REGEX = "^[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.?[A-Za-z0-9-_.+/=]*$";
+    public static final String TOKEN_REGEX = "^[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.?[A-Za-z0-9-_.+/=]*$";
     private static final String EMAIL = "test@test.com";
     private static final String PASSWORD = "testpassword123*";
 
