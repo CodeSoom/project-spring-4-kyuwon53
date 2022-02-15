@@ -1,6 +1,7 @@
 package com.kyuwon.booklog.utils;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.security.SignatureException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("토큰 관리 ")
 @SpringBootTest
@@ -48,6 +50,17 @@ class WebTokenUtilTest {
                 Claims claims = webTokenUtil.decode(VALID_TOKEN);
 
                 assertThat(claims.get("userId", Long.class)).isEqualTo(1L);
+            }
+        }
+
+        @Nested
+        @DisplayName("유효하지 않은 토큰이 주어지면")
+        class Context_with_invalid_token {
+            @Test
+            @DisplayName("서명되지 않았다는 예외를 던집니다.")
+            void it_throw_SignatureException() {
+                assertThatThrownBy(() -> webTokenUtil.decode(INVALID_TOKEN))
+                        .isInstanceOf(SignatureException.class);
             }
         }
     }
