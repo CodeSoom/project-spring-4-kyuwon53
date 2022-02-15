@@ -1,5 +1,6 @@
 package com.kyuwon.booklog.utils;
 
+import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -11,9 +12,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("토큰 관리 ")
 @SpringBootTest
 class WebTokenUtilTest {
-    private static final String ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9." +
-           "eyJ1c2VySWQiOjF9." +
-           "eaz-MEap3WlSgb38qIRgNEynf4X7KHVy0i3NyjHJO5E";
+    private static final String VALID_TOKEN = "eyJhbGciOiJIUzI1NiJ9." +
+            "eyJ1c2VySWQiOjF9." +
+            "eaz-MEap3WlSgb38qIRgNEynf4X7KHVy0i3NyjHJO5E";
+    private static final String INVALID_TOKEN = VALID_TOKEN + "xxx";
 
     @Autowired
     private WebTokenUtil webTokenUtil;
@@ -25,11 +27,27 @@ class WebTokenUtilTest {
         @DisplayName("id가 주어지면")
         class Context_with_id {
             @Test
-            @DisplayName("인증된 토큰을 리턴한다.")
+            @DisplayName("유효한 토큰을 리턴한다.")
             void it_return_Signed_token() {
-                String acceessToken = webTokenUtil.encode(1L);
+                String token = webTokenUtil.encode(1L);
 
-                assertThat(acceessToken).isEqualTo(ACCESS_TOKEN);
+                assertThat(token).isEqualTo(VALID_TOKEN);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("디코딩은")
+    class Describe_decode {
+        @Nested
+        @DisplayName("유효한 토큰이 주어지면")
+        class Context_with_valid_token {
+            @Test
+            @DisplayName("해당 id를 리턴한다.")
+            void it_return_id() {
+                Claims claims = webTokenUtil.decode(VALID_TOKEN);
+
+                assertThat(claims.get("userId", Long.class)).isEqualTo(1L);
             }
         }
     }
