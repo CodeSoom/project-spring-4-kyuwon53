@@ -44,6 +44,7 @@ public class UserController {
     private UserData getUserResultData(User user) {
         return UserData.builder()
                 .email(user.getEmail())
+                .password(user.getPassword())
                 .name(user.getName())
                 .picture(user.getPicture())
                 .build();
