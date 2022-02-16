@@ -1,6 +1,7 @@
 package com.kyuwon.booklog.domain.user;
 
 import com.kyuwon.booklog.domain.posts.BaseTimeEntity;
+import com.kyuwon.booklog.dto.user.UserData;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -83,5 +84,11 @@ public class User extends BaseTimeEntity {
     public void encodePassword(String password,
                                PasswordEncoder passwordEncoder) {
         this.password = passwordEncoder.encode(password);
+    }
+
+    public void changeUser(UserData changeData) {
+        name = changeData.getName();
+        picture = changeData.getPicture();
+        password = changeData.getPassword();
     }
 }
