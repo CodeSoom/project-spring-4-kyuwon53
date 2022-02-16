@@ -5,6 +5,7 @@ import com.kyuwon.booklog.dto.user.UserData;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -19,6 +20,7 @@ import javax.persistence.Id;
 /**
  * 사용자 정보를 저장하는 객체
  */
+@ToString
 @Getter
 @NoArgsConstructor
 @EnableJpaAuditing
@@ -57,6 +59,9 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false)
     private Role role;
 
+    @Column(columnDefinition = "boolean default false")
+    private Boolean deleted = false;
+
     /**
      * 사용자 권한 코드 키를 가져온다.
      *
@@ -86,9 +91,21 @@ public class User extends BaseTimeEntity {
         this.password = passwordEncoder.encode(password);
     }
 
+    /**
+     * 사용자 정보를 수정한다.
+     *
+     * @param changeData
+     */
     public void changeUser(UserData changeData) {
         name = changeData.getName();
         picture = changeData.getPicture();
         password = changeData.getPassword();
+    }
+
+    /**
+     * 사용자를 탈퇴 처리한다.
+     */
+    public void deleted() {
+        deleted = true;
     }
 }
