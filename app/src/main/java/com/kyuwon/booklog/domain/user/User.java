@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -71,5 +72,16 @@ public class User extends BaseTimeEntity {
         this.password = password;
         this.picture = picture;
         this.role = role;
+    }
+
+    /**
+     * 비밀번호를 암호화한다.
+     *
+     * @param password        비밀번호
+     * @param passwordEncoder 비밀번호 인코더
+     */
+    public void encodePassword(String password,
+                               PasswordEncoder passwordEncoder) {
+        this.password = passwordEncoder.encode(password);
     }
 }
