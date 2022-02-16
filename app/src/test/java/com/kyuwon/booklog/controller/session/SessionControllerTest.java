@@ -1,10 +1,12 @@
-package com.kyuwon.booklog.controller.user;
+package com.kyuwon.booklog.controller.session;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.kyuwon.booklog.domain.user.User;
 import com.kyuwon.booklog.domain.user.UserRepository;
+import com.kyuwon.booklog.dto.user.UserLoginData;
 import com.kyuwon.booklog.dto.user.UserSaveRequestData;
+import com.kyuwon.booklog.service.session.AuthenticationServiceTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -20,19 +22,16 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@DisplayName("사용자 컨트롤러")
-class UserControllerTest {
-    private static final String NAME = "테스트 이름";
-    private static final String EMAIL = "test@email.com";
-    private static final String PASSWORD = "1234abcd*";
-    private static final String PICTURE = "테스트 사진";
-
+@DisplayName("세션 요청")
+class SessionControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
@@ -44,6 +43,8 @@ class UserControllerTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    private AuthenticationServiceTest authenticationServiceTest;
+
     @BeforeEach
     void setUp() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(wac)
@@ -51,40 +52,74 @@ class UserControllerTest {
                 .build();
 
         objectMapper.registerModule(new JavaTimeModule());
-        userRepository.deleteAll();
     }
 
     @Nested
-    @DisplayName("사용자 회원가입 요청은")
-    class Describe_signUp {
-        UserSaveRequestData userSaveRequestData;
+    @DisplayName("로그인 요청은")
+    class Describe_login {
+        private User user;
+
+        @BeforeEach
+        void setUp() throws Exception {
+            userRepository.deleteAll();
+            user = prepareUser(getUserSaveData());
+        }
 
         @Nested
-        @DisplayName("사용자 회원가입 정보가 주어진다면")
-        class Context_with_user_data {
+        @DisplayName("올바른 사용자 정보가 주어지면")
+        class Context_with_user {
+            private UserLoginData userLoginData;
+
             @BeforeEach
-            void setUp() {
-                userSaveRequestData = getUserSaveData();
+            void prepareData() throws Exception {
+                userLoginData = UserLoginData.builder()
+                        .email(user.getEmail())
+                        .password(user.getPassword())
+                        .build();
             }
 
             @Test
-            @DisplayName("사용자를 저장하고 Created를 응답한다.")
-            void it_response_status_created() throws Exception {
-                mockMvc.perform(post("/users")
+            @DisplayName("토큰과 201 Created HTTP 상태코드를 응답한다.")
+            void it_respose_created_with_token() throws Exception {
+                mockMvc.perform(post("/session")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(userSaveRequestData)))
+                                .content(objectMapper.writeValueAsString(userLoginData)))
+                        .andDo(print())
                         .andExpect(status().isCreated())
-                        .andDo(print());
+                        .andExpect(jsonPath("$.accessToken", matchesPattern(authenticationServiceTest.TOKEN_REGEX)));
+            }
+        }
+
+        @Nested
+        @DisplayName("존재하지 않은 사용자 정보가 주어지면")
+        class Context_with_wrong_user {
+            private UserLoginData userLoginWrongData;
+
+            @BeforeEach
+            void prepareWrongData() {
+                userLoginWrongData = UserLoginData.builder()
+                        .email(user.getEmail() + "x")
+                        .password(user.getPassword() + "x")
+                        .build();
+            }
+
+            @Test
+            @DisplayName("잘못된 요청이라고 응답한다.")
+            void it_response_not_found_exception() throws Exception {
+                mockMvc.perform(post("/session")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsBytes(userLoginWrongData)))
+                        .andExpect(status().isBadRequest());
             }
         }
     }
 
     private UserSaveRequestData getUserSaveData() {
         return UserSaveRequestData.builder()
-                .email(EMAIL)
-                .name(NAME)
-                .password(PASSWORD)
-                .picture(PICTURE)
+                .email("test@email.com")
+                .name("테스트 이름")
+                .password("1234abcd*")
+                .picture("테스트 사진")
                 .build();
     }
 
@@ -98,5 +133,4 @@ class UserControllerTest {
 
         return objectMapper.readValue(content, User.class);
     }
-
 }
