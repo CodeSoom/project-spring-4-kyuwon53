@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,6 +25,8 @@ class UserServiceTest {
 
     @Autowired
     private UserService userService;
+
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
     private UserRepository userRepository;
@@ -58,10 +62,8 @@ class UserServiceTest {
 
                 assertThat(user.getEmail()).isEqualTo(EMAIL);
                 assertThat(user.getName()).isEqualTo(NAME);
-                assertThat(user.getPassword()).isEqualTo(PASSWORD);
                 assertThat(user.getPicture()).isEqualTo(PICTURE);
             }
         }
     }
-
 }
