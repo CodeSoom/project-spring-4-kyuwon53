@@ -59,7 +59,20 @@ public class UserService {
 
         user.changeUser(userUpdateData);
         user.encodePassword(userUpdateData.getPassword(), passwordEncoder);
+        return user;
+    }
 
+    /**
+     * 이메일에 해당하는 사용자를 탈퇴 처리하고 리턴한다.
+     *
+     * @param email 사용자 이메일
+     * @return 삭제된 사용자
+     * @throws UserNotFoundException 사용자를 찾을 수 없는 경우
+     */
+    public User deleteUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(email));
+        user.deleted();
         return user;
     }
 }
