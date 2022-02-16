@@ -54,7 +54,7 @@ public class UserService {
      * @throws UserNotFoundException 사용자를 찾을 수 없는 경우
      */
     public User updateUser(String email, UserData userUpdateData) {
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmailAndDeletedIsFalse(email)
                 .orElseThrow(() -> new UserNotFoundException(email));
 
         user.changeUser(userUpdateData);
@@ -70,7 +70,7 @@ public class UserService {
      * @throws UserNotFoundException 사용자를 찾을 수 없는 경우
      */
     public User deleteUser(String email) {
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmailAndDeletedIsFalse(email)
                 .orElseThrow(() -> new UserNotFoundException(email));
         user.deleted();
         return user;
