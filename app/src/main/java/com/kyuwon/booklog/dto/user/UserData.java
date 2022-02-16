@@ -16,6 +16,13 @@ public class UserData {
     private String password;
 
     @Builder
+    public UserData(String name, String picture, String password) {
+        this.name = name;
+        this.picture = picture;
+        this.password = password;
+    }
+
+    @Builder
     public UserData(String email, String name, String picture, String password) {
         this.email = email;
         this.name = name;
