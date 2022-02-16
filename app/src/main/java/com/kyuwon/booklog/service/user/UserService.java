@@ -75,4 +75,16 @@ public class UserService {
         user.deleted();
         return user;
     }
+
+    /**
+     * 이메일에 해당하는 사용자 정보를 리턴한다.
+     *
+     * @param email 사용자 이메일
+     * @return 사용자 정보
+     * @throws UserNotFoundException 사용자를 찾을 수 없는 경우
+     */
+    public User detailUser(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(email));
+    }
 }
