@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.format.DateTimeFormatter;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -159,6 +161,56 @@ class UserServiceTest {
             @BeforeEach
             void cleanUp() {
                 userRepository.deleteAll();
+            }
+
+            @Test
+            @DisplayName("사용자를 찾을 수 없다는 예외를 던진다.")
+            void it_throw_NotFoundUserException() {
+                assertThatThrownBy(() -> userService.deleteUser(email))
+                        .isInstanceOf(UserNotFoundException.class);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("사용자 상제 조회는")
+    class Describe_detail {
+        User user;
+        String email;
+
+        @BeforeEach
+        void createUser() {
+            user = preparedUser(getUser());
+        }
+
+        @Nested
+        @DisplayName("존재하는 이메일이면")
+        class Context_when_exist_email {
+
+            @Test
+            @DisplayName("사용자 정보를 리턴한다.")
+            void it_return_user_data() {
+                email = user.getEmail();
+                User userDetail = userService.detailUser(email);
+
+                assertThat(userDetail.getName()).isEqualTo(user.getName());
+                assertThat(userDetail.getEmail()).isEqualTo(user.getEmail());
+                assertThat(userDetail.getPicture()).isEqualTo(user.getPicture());
+                assertThat(userDetail.getCreatedDate()
+                        .format(DateTimeFormatter.ofPattern("YYYY-mm-dd HH:MM:ss")))
+                        .isEqualTo(user.getCreatedDate()
+                                .format(DateTimeFormatter.ofPattern("YYYY-mm-dd HH:MM:ss")));
+            }
+        }
+
+        @Nested
+        @DisplayName("존재하지 않는 이메일 조회하면")
+        class Context_when_not_exist_email {
+
+            @BeforeEach
+            void cleanUp() {
+                userRepository.deleteAll();
+                email = user.getEmail();
             }
 
             @Test
