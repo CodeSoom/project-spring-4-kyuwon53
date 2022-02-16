@@ -4,6 +4,7 @@ import com.kyuwon.booklog.domain.user.User;
 import com.kyuwon.booklog.domain.user.UserRepository;
 import com.kyuwon.booklog.dto.user.UserData;
 import com.kyuwon.booklog.dto.user.UserSaveRequestData;
+import com.kyuwon.booklog.errors.UserNotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @DisplayName("사용자 관리")
@@ -72,36 +74,60 @@ class UserServiceTest {
     @DisplayName("회원 정보 수정은")
     class Discribe_update {
         User user;
+        UserData userModifyData;
+        String email;
 
         @BeforeEach
         void prepareUser() {
             user = preparedUser(getUser());
+            email = user.getEmail();
         }
 
         @Nested
         @DisplayName("본인 정보를 수정하면")
         class Context_when_match_id {
-            UserData userModifyData;
 
             @BeforeEach
             void setUp() {
-                userModifyData = UserData.builder()
-                        .name(NEW_NAME)
-                        .password(NEW_PASSWORD)
-                        .picture(NEW_PICTURE)
-                        .build();
+                userModifyData = getModifyUserData();
             }
 
             @Test
             @DisplayName("수정하고 수정된 정보를 리턴한다.")
             void it_return_update_user() {
-                String email = user.getEmail();
                 User updateUser = userService.updateUser(email, userModifyData);
 
                 assertThat(updateUser.getName()).isEqualTo(NEW_NAME);
                 assertThat(updateUser.getPicture()).isEqualTo(NEW_PICTURE);
             }
         }
+
+        @Nested
+        @DisplayName("잘못된 이메일로 수정을 하면")
+        class Context_when_not_match_id {
+
+            @BeforeEach
+            void setUp() {
+                userRepository.deleteAll();
+
+                userModifyData = getModifyUserData();
+            }
+
+            @Test
+            @DisplayName("사용자를 찾을 수 없다는 예외를 던진다.")
+            void it_throw_NotFoundUserException() {
+                assertThatThrownBy(() -> userService.updateUser(email, userModifyData))
+                        .isInstanceOf(UserNotFoundException.class);
+            }
+        }
+    }
+
+    private UserData getModifyUserData() {
+        return UserData.builder()
+                .name(NEW_NAME)
+                .password(NEW_PASSWORD)
+                .picture(NEW_PICTURE)
+                .build();
     }
 
     private UserSaveRequestData getUser() {
