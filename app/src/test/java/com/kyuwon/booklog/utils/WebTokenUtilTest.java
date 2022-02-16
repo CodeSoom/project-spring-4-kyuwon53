@@ -1,7 +1,7 @@
 package com.kyuwon.booklog.utils;
 
+import com.kyuwon.booklog.errors.InvalidTokenException;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.security.SignatureException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -60,7 +60,7 @@ class WebTokenUtilTest {
             @DisplayName("서명되지 않았다는 예외를 던집니다.")
             void it_throw_SignatureException() {
                 assertThatThrownBy(() -> webTokenUtil.decode(INVALID_TOKEN))
-                        .isInstanceOf(SignatureException.class);
+                        .isInstanceOf(InvalidTokenException.class);
             }
         }
     }
