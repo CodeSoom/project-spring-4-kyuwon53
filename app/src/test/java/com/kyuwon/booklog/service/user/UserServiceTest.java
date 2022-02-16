@@ -89,7 +89,7 @@ class UserServiceTest {
 
             @BeforeEach
             void setUp() {
-                userModifyData = getModifyUserData();
+                userModifyData = getModifyUserData(email);
             }
 
             @Test
@@ -110,7 +110,7 @@ class UserServiceTest {
             void setUp() {
                 userRepository.deleteAll();
 
-                userModifyData = getModifyUserData();
+                userModifyData = getModifyUserData(email);
             }
 
             @Test
@@ -122,8 +122,57 @@ class UserServiceTest {
         }
     }
 
-    private UserData getModifyUserData() {
+    @Nested
+    @DisplayName("사용자 탈퇴는")
+    class Describe_delete {
+        User user;
+        String email;
+
+        @BeforeEach
+        void prepareUser() {
+            user = preparedUser(getUser());
+            email = user.getEmail();
+        }
+
+        @Nested
+        @DisplayName("존재하는 이메일로 탈퇴를 하면")
+        class Context_when_exist_email {
+
+            @BeforeEach
+            void setUp() {
+            }
+
+            @Test
+            @DisplayName("탈퇴하고 리턴한다.")
+            void it_return_update_user() {
+                User deleteUser = userService.deleteUser(email);
+
+                assertThat(deleteUser.getEmail()).isEqualTo(email);
+                assertThat(deleteUser.getDeleted()).isTrue();
+            }
+        }
+
+        @Nested
+        @DisplayName("존재하지 않는 이메일을 탈퇴하면")
+        class Context_when_not_exist_email {
+
+            @BeforeEach
+            void cleanUp() {
+                userRepository.deleteAll();
+            }
+
+            @Test
+            @DisplayName("사용자를 찾을 수 없다는 예외를 던진다.")
+            void it_throw_NotFoundUserException() {
+                assertThatThrownBy(() -> userService.deleteUser(email))
+                        .isInstanceOf(UserNotFoundException.class);
+            }
+        }
+    }
+
+    private UserData getModifyUserData(String email) {
         return UserData.builder()
+                .email(email)
                 .name(NEW_NAME)
                 .password(NEW_PASSWORD)
                 .picture(NEW_PICTURE)
