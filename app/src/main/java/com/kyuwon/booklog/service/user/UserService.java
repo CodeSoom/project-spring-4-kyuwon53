@@ -5,6 +5,7 @@ import com.kyuwon.booklog.domain.user.UserRepository;
 import com.kyuwon.booklog.dto.user.UserSaveRequestData;
 import com.kyuwon.booklog.errors.UserEmailDuplicationException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -12,11 +13,16 @@ import javax.transaction.Transactional;
 /**
  * 사용자를 관리한다.
  */
-@RequiredArgsConstructor
 @Service
 @Transactional
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     /**
      * 회원 정보를 받아 회원을 생성하여 리턴한다.
@@ -30,7 +36,11 @@ public class UserService {
         if (userRepository.existsByEmail(email)) {
             throw new UserEmailDuplicationException(email);
         }
-        //TODO: 비밀번호 인코딩 처리
-        return userRepository.save(saveRequestData.toEntity());
+
+        User user = saveRequestData.toEntity();
+
+        user.encodePassword(saveRequestData.getPassword(), passwordEncoder);
+
+        return userRepository.save(user);
     }
 }
