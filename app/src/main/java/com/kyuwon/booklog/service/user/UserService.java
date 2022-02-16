@@ -2,9 +2,10 @@ package com.kyuwon.booklog.service.user;
 
 import com.kyuwon.booklog.domain.user.User;
 import com.kyuwon.booklog.domain.user.UserRepository;
+import com.kyuwon.booklog.dto.user.UserData;
 import com.kyuwon.booklog.dto.user.UserSaveRequestData;
 import com.kyuwon.booklog.errors.UserEmailDuplicationException;
-import lombok.RequiredArgsConstructor;
+import com.kyuwon.booklog.errors.UserNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -42,5 +43,23 @@ public class UserService {
         user.encodePassword(saveRequestData.getPassword(), passwordEncoder);
 
         return userRepository.save(user);
+    }
+
+    /**
+     * 이메일에 해당하는 사용자를 수정하고 리턴한다.
+     *
+     * @param email          회원 이메일
+     * @param userUpdateData 수정할 사용자 정보
+     * @return 수정된 사용자
+     * @throws UserNotFoundException 사용자를 찾을 수 없는 경우
+     */
+    public User updateUser(String email, UserData userUpdateData) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(email));
+
+        user.changeUser(userUpdateData);
+        user.encodePassword(userUpdateData.getPassword(), passwordEncoder);
+
+        return user;
     }
 }
