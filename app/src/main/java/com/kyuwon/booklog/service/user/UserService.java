@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.List;
 
 /**
  * 사용자를 관리한다.
@@ -86,5 +87,14 @@ public class UserService {
     public User detailUser(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException(email));
+    }
+
+    /**
+     * 사용자 정보 목록을 리턴한다.
+     *
+     * @return 사용자 목록
+     */
+    public List<User> userList() {
+        return userRepository.findAll();
     }
 }
