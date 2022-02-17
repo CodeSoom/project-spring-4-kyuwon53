@@ -97,4 +97,17 @@ public class UserService {
     public List<User> userList() {
         return userRepository.findAll();
     }
+
+    /**
+     * 사용자 id에 해당하는 email을 리턴한다.
+     *
+     * @param id 사용자 id
+     * @return 사용자 email
+     * @throws UserNotFoundException 사용자를 찾을 수 없는 경우
+     */
+    public String getUserEmailById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+        return user.getEmail();
+    }
 }
