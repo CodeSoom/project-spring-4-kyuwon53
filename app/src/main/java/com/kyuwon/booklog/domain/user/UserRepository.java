@@ -25,7 +25,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
 
     /**
-     * email에 해당하는 사용자를 찾고 탈퇴여부를 확인한다.
+     * email에 해당하는 사용자를 찾아 리턴한다.
      *
      * @param email 회원 이메일
      * @return 탈퇴되지 않은 등록된 회원
