@@ -14,9 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
 
 @SpringBootTest
 @DisplayName("사용자 관리")
@@ -218,6 +220,52 @@ class UserServiceTest {
             void it_throw_NotFoundUserException() {
                 assertThatThrownBy(() -> userService.deleteUser(email))
                         .isInstanceOf(UserNotFoundException.class);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("사용자 목록 조회는")
+    class Describe_list {
+        @Nested
+        @DisplayName("사용자가 있다면")
+        class Context_when_exist_user {
+            UserSaveRequestData userSaveRequestData;
+            int count = 10;
+
+            @BeforeEach
+            void setUp() {
+                for (int i = 0; i < count; i++) {
+                    userSaveRequestData = UserSaveRequestData.builder()
+                            .email(EMAIL + i)
+                            .picture(PICTURE)
+                            .name(NAME + i)
+                            .password(PASSWORD)
+                            .build();
+
+                    preparedUser(userSaveRequestData);
+                }
+            }
+
+            @Test
+            @DisplayName("사용자 목록을 리턴한다.")
+            void it_return_user_list() {
+                assertThat(userService.userList()).hasSize(count);
+            }
+        }
+
+        @Nested
+        @DisplayName("사용자가 존재하지 않으면")
+        class Context_not_exist_user {
+            @BeforeEach
+            void cleanUser() {
+                userRepository.deleteAll();
+            }
+
+            @Test
+            @DisplayName("빈 리스트를 리턴한다.")
+            void it_return_empty_list() {
+                assertThat(userService.userList()).isEmpty();
             }
         }
     }
