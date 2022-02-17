@@ -14,11 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
 
 @SpringBootTest
 @DisplayName("사용자 관리")
@@ -78,7 +76,6 @@ class UserServiceTest {
     @DisplayName("회원 정보 수정은")
     class Discribe_update {
         User user;
-        UserData userModifyData;
         String email;
 
         @BeforeEach
@@ -91,15 +88,10 @@ class UserServiceTest {
         @DisplayName("본인 정보를 수정하면")
         class Context_when_match_id {
 
-            @BeforeEach
-            void setUp() {
-                userModifyData = getModifyUserData(email);
-            }
-
             @Test
             @DisplayName("수정하고 수정된 정보를 리턴한다.")
-            void it_return_update_user() {
-                User updateUser = userService.updateUser(email, userModifyData);
+            void it_return_updatedUser() {
+                User updateUser = userService.updateUser(email, getModifyUserData(email));
 
                 assertThat(updateUser.getName()).isEqualTo(NEW_NAME);
                 assertThat(updateUser.getPicture()).isEqualTo(NEW_PICTURE);
@@ -113,14 +105,12 @@ class UserServiceTest {
             @BeforeEach
             void setUp() {
                 userRepository.deleteAll();
-
-                userModifyData = getModifyUserData(email);
             }
 
             @Test
             @DisplayName("사용자를 찾을 수 없다는 예외를 던진다.")
             void it_throw_NotFoundUserException() {
-                assertThatThrownBy(() -> userService.updateUser(email, userModifyData))
+                assertThatThrownBy(() -> userService.updateUser(email, getModifyUserData(email)))
                         .isInstanceOf(UserNotFoundException.class);
             }
         }
@@ -141,10 +131,6 @@ class UserServiceTest {
         @Nested
         @DisplayName("존재하는 이메일로 탈퇴를 하면")
         class Context_when_exist_email {
-
-            @BeforeEach
-            void setUp() {
-            }
 
             @Test
             @DisplayName("탈퇴하고 리턴한다.")
