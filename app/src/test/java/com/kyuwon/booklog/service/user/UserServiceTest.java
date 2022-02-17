@@ -256,6 +256,44 @@ class UserServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("이메일 조회는 ")
+    class Describe_getUserEmailById {
+        @Nested
+        @DisplayName("존재하는 사용자라면")
+        class Context_when_exist_user {
+            User user;
+
+            @BeforeEach
+            void prepareUser() {
+                user = preparedUser(getUser());
+            }
+
+            @Test
+            @DisplayName("id에 해당하는 email을 리턴한다.")
+            void it_return_email_by_id() {
+                Long id = user.getId();
+                assertThat(userService.getUserEmailById(id)).isEqualTo(user.getEmail());
+            }
+        }
+
+        @Nested
+        @DisplayName("존재하지 않은 사용자라면")
+        class Context_when_not_exist_user {
+            @BeforeEach
+            void cleanUp() {
+                userRepository.deleteAll();
+            }
+
+            @Test
+            @DisplayName("사용자를 찾을 수 없다는 예외를 던진다.")
+            void it_throw_UserNotFoundException() {
+                assertThatThrownBy(() -> userService.getUserEmailById(1L))
+                        .isInstanceOf(UserNotFoundException.class);
+            }
+        }
+    }
+
     private UserData getModifyUserData(String email) {
         return UserData.builder()
                 .email(email)
