@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -80,6 +81,16 @@ public class UserController {
         String email = userService.getUserEmailById(id);
         User user = userService.detailUser(email);
         return getUserResultData(user);
+    }
+
+    /**
+     * 등록된 회원 목록을 리턴한다.
+     *
+     * @return 회원 전체 목록
+     */
+    @GetMapping
+    public List<User> list() {
+        return userService.userList();
     }
 
     /**
