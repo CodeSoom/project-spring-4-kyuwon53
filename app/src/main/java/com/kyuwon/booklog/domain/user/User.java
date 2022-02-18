@@ -110,4 +110,13 @@ public class User extends BaseTimeEntity {
     public void deleted() {
         deleted = true;
     }
+
+    public UserData toUserData() {
+        return UserData.builder()
+                .email(email)
+                .password(password)
+                .name(name)
+                .picture(picture)
+                .build();
+    }
 }
