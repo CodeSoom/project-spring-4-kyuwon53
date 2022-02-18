@@ -1,5 +1,6 @@
 package com.kyuwon.booklog.domain.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.kyuwon.booklog.domain.posts.BaseTimeEntity;
 import com.kyuwon.booklog.dto.user.UserData;
 import lombok.Builder;
@@ -24,6 +25,7 @@ import javax.persistence.Id;
 @Getter
 @NoArgsConstructor
 @EnableJpaAuditing
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Entity
 public class User extends BaseTimeEntity {
     /**
