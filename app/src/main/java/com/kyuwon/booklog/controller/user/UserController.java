@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -63,6 +64,19 @@ public class UserController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public UserData delete(@PathVariable Long id) {
+        String email = userService.getUserEmailById(id);
+        User user = userService.deleteUser(email);
+        return getUserResultData(user);
+    }
+
+    /**
+     * 요청받은 id에 해당하는 회원을 조회한다.
+     *
+     * @param id 조회할 회원 id
+     * @return 조회된 회원
+     */
+    @GetMapping("/{id}")
+    public UserData detail(@PathVariable Long id) {
         String email = userService.getUserEmailById(id);
         User user = userService.detailUser(email);
         return getUserResultData(user);
