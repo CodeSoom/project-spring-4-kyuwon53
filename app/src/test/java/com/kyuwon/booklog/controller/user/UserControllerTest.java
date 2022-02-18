@@ -22,6 +22,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
 import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -135,6 +136,46 @@ class UserControllerTest {
                 mockMvc.perform(patch("/users/" + user.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(userUpdatedData)))
+                        .andExpect(status().isNotFound());
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("사용자 삭제 요청은")
+    class Describe_delete {
+        User user;
+
+        @BeforeEach
+        void createUser() throws Exception {
+            user = prepareUser(getUserSaveData());
+        }
+
+        @Nested
+        @DisplayName("존재하는 사용자일 경우")
+        class Context_when_exist_user {
+
+            @Test
+            @DisplayName("HTTP NoContent를 응답한다.")
+            void it_response_status_NoContent() throws Exception {
+                mockMvc.perform(delete("/users/" + user.getId()))
+                        .andDo(print())
+                        .andExpect(status().isNoContent());
+            }
+        }
+
+        @Nested
+        @DisplayName("존재하지 않는 사용자일 경우")
+        class Context_when_not_exist_user {
+            @BeforeEach
+            void cleanUp() {
+                userRepository.deleteAll();
+            }
+
+            @Test
+            @DisplayName("찾을 수 없는 사용자라고 예외를 던진다.")
+            void it_throw_UserNotFoundException() throws Exception {
+                mockMvc.perform(delete("/users/" + user.getId()))
                         .andExpect(status().isNotFound());
             }
         }
