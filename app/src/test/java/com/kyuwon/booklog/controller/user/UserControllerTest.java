@@ -23,6 +23,7 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -176,6 +177,47 @@ class UserControllerTest {
             @DisplayName("찾을 수 없는 사용자라고 예외를 던진다.")
             void it_throw_UserNotFoundException() throws Exception {
                 mockMvc.perform(delete("/users/" + user.getId()))
+                        .andExpect(status().isNotFound());
+            }
+        }
+    }
+    @Nested
+    @DisplayName("사용자 상세조회 요청은")
+    class Describe_detail {
+        User user;
+
+        @BeforeEach
+        void createUser() throws Exception {
+            user = prepareUser(getUserSaveData());
+        }
+
+        @Nested
+        @DisplayName("존재하는 사용자일 경우")
+        class Context_when_exist_user {
+
+            @Test
+            @DisplayName("HTTP isOk를 응답한다.")
+            void it_response_status_isOk() throws Exception {
+                mockMvc.perform(get("/users/" + user.getId()))
+                        .andDo(print())
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.name",is(NAME)))
+                        .andExpect(jsonPath("$.email",is(EMAIL)));
+            }
+        }
+
+        @Nested
+        @DisplayName("존재하지 않는 사용자일 경우")
+        class Context_when_not_exist_user {
+            @BeforeEach
+            void cleanUp() {
+                userRepository.deleteAll();
+            }
+
+            @Test
+            @DisplayName("찾을 수 없는 사용자라고 예외를 던진다.")
+            void it_throw_UserNotFoundException() throws Exception {
+                mockMvc.perform(get("/users/" + user.getId()))
                         .andExpect(status().isNotFound());
             }
         }
