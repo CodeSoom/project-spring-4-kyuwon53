@@ -53,7 +53,7 @@ public class UserController {
     ) {
         String email = userService.getUserEmailById(id);
         User user = userService.updateUser(email, userModifyData);
-        return getUserResultData(user);
+        return user.toUserData();
     }
 
     /**
@@ -67,7 +67,7 @@ public class UserController {
     public UserData delete(@PathVariable Long id) {
         String email = userService.getUserEmailById(id);
         User user = userService.deleteUser(email);
-        return getUserResultData(user);
+        return user.toUserData();
     }
 
     /**
@@ -80,7 +80,7 @@ public class UserController {
     public UserData detail(@PathVariable Long id) {
         String email = userService.getUserEmailById(id);
         User user = userService.detailUser(email);
-        return getUserResultData(user);
+        return user.toUserData();
     }
 
     /**
@@ -91,20 +91,5 @@ public class UserController {
     @GetMapping
     public List<User> list() {
         return userService.userList();
-    }
-
-    /**
-     * 사용자 요청 결과를 리턴한다.
-     *
-     * @param user 사용자 정보
-     * @return 응답 결과
-     */
-    private UserData getUserResultData(User user) {
-        return UserData.builder()
-                .email(user.getEmail())
-                .password(user.getPassword())
-                .name(user.getName())
-                .picture(user.getPicture())
-                .build();
     }
 }
