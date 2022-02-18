@@ -21,12 +21,17 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -74,7 +79,7 @@ class UserControllerTest {
         class Context_with_user_data {
             @BeforeEach
             void setUp() {
-                userSaveRequestData = getUserSaveData();
+                userSaveRequestData = getUserSaveData("new");
             }
 
             @Test
@@ -97,7 +102,7 @@ class UserControllerTest {
 
         @BeforeEach
         void createUser() throws Exception {
-            user = prepareUser(getUserSaveData());
+            user = prepareUser(getUserSaveData("update"));
         }
 
         @Nested
@@ -149,7 +154,7 @@ class UserControllerTest {
 
         @BeforeEach
         void createUser() throws Exception {
-            user = prepareUser(getUserSaveData());
+            user = prepareUser(getUserSaveData("delete"));
         }
 
         @Nested
@@ -181,6 +186,7 @@ class UserControllerTest {
             }
         }
     }
+
     @Nested
     @DisplayName("사용자 상세조회 요청은")
     class Describe_detail {
@@ -188,7 +194,7 @@ class UserControllerTest {
 
         @BeforeEach
         void createUser() throws Exception {
-            user = prepareUser(getUserSaveData());
+            user = prepareUser(getUserSaveData("detail"));
         }
 
         @Nested
@@ -201,8 +207,8 @@ class UserControllerTest {
                 mockMvc.perform(get("/users/" + user.getId()))
                         .andDo(print())
                         .andExpect(status().isOk())
-                        .andExpect(jsonPath("$.name",is(NAME)))
-                        .andExpect(jsonPath("$.email",is(EMAIL)));
+                        .andExpect(jsonPath("$.name", is(NAME)))
+                        .andExpect(jsonPath("$.email", is("detail"+EMAIL)));
             }
         }
 
@@ -223,6 +229,51 @@ class UserControllerTest {
         }
     }
 
+    @Nested
+    @DisplayName("사용자 목록조회 요청은")
+    class Describe_list {
+
+        @Nested
+        @DisplayName("사용자가 존재할 경우")
+        class Context_when_exist_user {
+            int userCount = 10;
+            List<User> userList = new ArrayList<>();
+
+            @BeforeEach
+            void createUser() throws Exception {
+                for (int i = 0; i < userCount; i++) {
+                    prepareUser(getUserSaveData("" + i));
+                    userList.add(getUserSaveData("" + i).toEntity());
+                }
+            }
+
+            @Test
+            @DisplayName("HTTP isOk를 응답한다.")
+            void it_response_status_isOk() throws Exception {
+                mockMvc.perform(get("/users"))
+                        .andDo(print())
+                        .andExpect(status().isOk())
+                        .andExpect(content().string(containsString(NAME)));
+            }
+        }
+
+        @Nested
+        @DisplayName("사용자가 존재하지 않을 경우")
+        class Context_when_not_exist_user {
+            @BeforeEach
+            void cleanUp() {
+                userRepository.deleteAll();
+            }
+
+            @Test
+            @DisplayName("빈 배열을 리턴한다.")
+            void it_return_empty_array() throws Exception {
+                mockMvc.perform(get("/users"))
+                        .andExpect(content().string(containsString("[]")));
+            }
+        }
+    }
+
     private UserData getModifyUserData(String email) {
         return UserData.builder()
                 .email(email)
@@ -232,9 +283,9 @@ class UserControllerTest {
                 .build();
     }
 
-    private UserSaveRequestData getUserSaveData() {
+    private UserSaveRequestData getUserSaveData(String prefix) {
         return UserSaveRequestData.builder()
-                .email(EMAIL)
+                .email(prefix + EMAIL)
                 .name(NAME)
                 .password(PASSWORD)
                 .picture(PICTURE)
