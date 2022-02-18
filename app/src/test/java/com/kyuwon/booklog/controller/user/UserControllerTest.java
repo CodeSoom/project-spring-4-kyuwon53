@@ -118,6 +118,26 @@ class UserControllerTest {
                         .andExpect(jsonPath("$.email", is(user.getEmail())));
             }
         }
+
+        @Nested
+        @DisplayName("존재하지 않는 사용자일 경우")
+        class Context_when_not_exist_user {
+            @BeforeEach
+            void cleanUp() {
+                userRepository.deleteAll();
+            }
+
+            @Test
+            @DisplayName("찾을 수 없는 사용자라고 예외를 던진다.")
+            void it_throw_UserNotFoundException() throws Exception {
+                userUpdatedData = getModifyUserData(user.getEmail());
+
+                mockMvc.perform(patch("/users/" + user.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(userUpdatedData)))
+                        .andExpect(status().isNotFound());
+            }
+        }
     }
 
     private UserData getModifyUserData(String email) {
