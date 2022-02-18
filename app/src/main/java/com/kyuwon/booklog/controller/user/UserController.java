@@ -7,6 +7,7 @@ import com.kyuwon.booklog.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,6 +51,20 @@ public class UserController {
     ) {
         String email = userService.getUserEmailById(id);
         User user = userService.updateUser(email, userModifyData);
+        return getUserResultData(user);
+    }
+
+    /**
+     * 회원을 탈퇴처리하고 리턴한다.
+     *
+     * @param id 탈퇴할 회원 id
+     * @return 탈퇴한 회원
+     */
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public UserData delete(@PathVariable Long id) {
+        String email = userService.getUserEmailById(id);
+        User user = userService.detailUser(email);
         return getUserResultData(user);
     }
 
