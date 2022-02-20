@@ -24,7 +24,7 @@ public class UserData {
         this.password = password;
     }
 
-    public static UserData toUserData(User user) {
+    public static UserData of(User user) {
         return UserData.builder()
                 .email(user.getEmail())
                 .password(user.getPassword())
