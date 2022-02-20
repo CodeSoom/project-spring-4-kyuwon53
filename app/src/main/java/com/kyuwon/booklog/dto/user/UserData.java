@@ -1,5 +1,6 @@
 package com.kyuwon.booklog.dto.user;
 
+import com.kyuwon.booklog.domain.user.User;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,5 +22,14 @@ public class UserData {
         this.name = name;
         this.picture = picture;
         this.password = password;
+    }
+
+    public static UserData of(User user) {
+        return UserData.builder()
+                .email(user.getEmail())
+                .password(user.getPassword())
+                .name(user.getName())
+                .picture(user.getPicture())
+                .build();
     }
 }

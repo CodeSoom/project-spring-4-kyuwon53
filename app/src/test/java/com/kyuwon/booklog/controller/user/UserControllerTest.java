@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.kyuwon.booklog.domain.user.User;
 import com.kyuwon.booklog.domain.user.UserRepository;
+import com.kyuwon.booklog.dto.user.UserData;
 import com.kyuwon.booklog.dto.user.UserSaveRequestData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,8 +21,18 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -32,6 +43,10 @@ class UserControllerTest {
     private static final String EMAIL = "test@email.com";
     private static final String PASSWORD = "1234abcd*";
     private static final String PICTURE = "테스트 사진";
+
+    private static final String NEW_NAME = "NEW테스트 이름";
+    private static final String NEW_PASSWORD = "NEW1234abcd*";
+    private static final String NEW_PICTURE = "NEW테스트 사진";
 
     @Autowired
     private MockMvc mockMvc;
@@ -64,7 +79,7 @@ class UserControllerTest {
         class Context_with_user_data {
             @BeforeEach
             void setUp() {
-                userSaveRequestData = getUserSaveData();
+                userSaveRequestData = getUserSaveData("new");
             }
 
             @Test
@@ -79,9 +94,198 @@ class UserControllerTest {
         }
     }
 
-    private UserSaveRequestData getUserSaveData() {
+    @Nested
+    @DisplayName("사용자 수정 요청은")
+    class Describe_update {
+        UserData userUpdatedData;
+        User user;
+
+        @BeforeEach
+        void createUser() throws Exception {
+            user = prepareUser(getUserSaveData("update"));
+        }
+
+        @Nested
+        @DisplayName("존재하는 사용자일 경우")
+        class Context_when_exist_user {
+            @BeforeEach
+            void setUp() {
+                userUpdatedData = getModifyUserData(user.getEmail());
+            }
+
+            @Test
+            @DisplayName("정보를 수정하고 OK를 응답한다.")
+            void it_response_status_ok() throws Exception {
+                mockMvc.perform(patch("/users/" + user.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(userUpdatedData)))
+                        .andDo(print())
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.name", is(NEW_NAME)))
+                        .andExpect(jsonPath("$.email", is(user.getEmail())));
+            }
+        }
+
+        @Nested
+        @DisplayName("존재하지 않는 사용자일 경우")
+        class Context_when_not_exist_user {
+            @BeforeEach
+            void cleanUp() {
+                userRepository.deleteAll();
+            }
+
+            @Test
+            @DisplayName("찾을 수 없는 사용자라고 예외를 던진다.")
+            void it_throw_UserNotFoundException() throws Exception {
+                userUpdatedData = getModifyUserData(user.getEmail());
+
+                mockMvc.perform(patch("/users/" + user.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(userUpdatedData)))
+                        .andExpect(status().isNotFound());
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("사용자 삭제 요청은")
+    class Describe_delete {
+        User user;
+
+        @BeforeEach
+        void createUser() throws Exception {
+            user = prepareUser(getUserSaveData("delete"));
+        }
+
+        @Nested
+        @DisplayName("존재하는 사용자일 경우")
+        class Context_when_exist_user {
+
+            @Test
+            @DisplayName("HTTP NoContent를 응답한다.")
+            void it_response_status_NoContent() throws Exception {
+                mockMvc.perform(delete("/users/" + user.getId()))
+                        .andDo(print())
+                        .andExpect(status().isNoContent());
+            }
+        }
+
+        @Nested
+        @DisplayName("존재하지 않는 사용자일 경우")
+        class Context_when_not_exist_user {
+            @BeforeEach
+            void cleanUp() {
+                userRepository.deleteAll();
+            }
+
+            @Test
+            @DisplayName("찾을 수 없는 사용자라고 예외를 던진다.")
+            void it_throw_UserNotFoundException() throws Exception {
+                mockMvc.perform(delete("/users/" + user.getId()))
+                        .andExpect(status().isNotFound());
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("사용자 상세조회 요청은")
+    class Describe_detail {
+        User user;
+
+        @BeforeEach
+        void createUser() throws Exception {
+            user = prepareUser(getUserSaveData("detail"));
+        }
+
+        @Nested
+        @DisplayName("존재하는 사용자일 경우")
+        class Context_when_exist_user {
+
+            @Test
+            @DisplayName("HTTP isOk를 응답한다.")
+            void it_response_status_isOk() throws Exception {
+                mockMvc.perform(get("/users/" + user.getId()))
+                        .andDo(print())
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.name", is(NAME)))
+                        .andExpect(jsonPath("$.email", is("detail"+EMAIL)));
+            }
+        }
+
+        @Nested
+        @DisplayName("존재하지 않는 사용자일 경우")
+        class Context_when_not_exist_user {
+            @BeforeEach
+            void cleanUp() {
+                userRepository.deleteAll();
+            }
+
+            @Test
+            @DisplayName("찾을 수 없는 사용자라고 예외를 던진다.")
+            void it_throw_UserNotFoundException() throws Exception {
+                mockMvc.perform(get("/users/" + user.getId()))
+                        .andExpect(status().isNotFound());
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("사용자 목록조회 요청은")
+    class Describe_list {
+
+        @Nested
+        @DisplayName("사용자가 존재할 경우")
+        class Context_when_exist_user {
+            int userCount = 10;
+            List<User> userList = new ArrayList<>();
+
+            @BeforeEach
+            void createUser() throws Exception {
+                for (int i = 0; i < userCount; i++) {
+                    prepareUser(getUserSaveData("" + i));
+                    userList.add(getUserSaveData("" + i).toEntity());
+                }
+            }
+
+            @Test
+            @DisplayName("HTTP isOk를 응답한다.")
+            void it_response_status_isOk() throws Exception {
+                mockMvc.perform(get("/users"))
+                        .andDo(print())
+                        .andExpect(status().isOk())
+                        .andExpect(content().string(containsString(NAME)));
+            }
+        }
+
+        @Nested
+        @DisplayName("사용자가 존재하지 않을 경우")
+        class Context_when_not_exist_user {
+            @BeforeEach
+            void cleanUp() {
+                userRepository.deleteAll();
+            }
+
+            @Test
+            @DisplayName("빈 배열을 리턴한다.")
+            void it_return_empty_array() throws Exception {
+                mockMvc.perform(get("/users"))
+                        .andExpect(content().string(containsString("[]")));
+            }
+        }
+    }
+
+    private UserData getModifyUserData(String email) {
+        return UserData.builder()
+                .email(email)
+                .name(NEW_NAME)
+                .password(NEW_PASSWORD)
+                .picture(NEW_PICTURE)
+                .build();
+    }
+
+    private UserSaveRequestData getUserSaveData(String prefix) {
         return UserSaveRequestData.builder()
-                .email(EMAIL)
+                .email(prefix + EMAIL)
                 .name(NAME)
                 .password(PASSWORD)
                 .picture(PICTURE)

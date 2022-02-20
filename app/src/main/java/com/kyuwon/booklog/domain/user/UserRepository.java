@@ -23,4 +23,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return 등록된 회원 true, 미등록은 false
      */
     boolean existsByEmail(String email);
+
+    /**
+     * email에 해당하는 사용자를 찾아 리턴한다.
+     *
+     * @param email 회원 이메일
+     * @return 탈퇴되지 않은 등록된 회원
+     */
+    Optional<User> findByEmailAndDeletedIsFalse(String email);
 }
