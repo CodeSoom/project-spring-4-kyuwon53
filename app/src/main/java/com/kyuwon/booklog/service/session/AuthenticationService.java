@@ -4,6 +4,7 @@ import com.kyuwon.booklog.domain.user.User;
 import com.kyuwon.booklog.domain.user.UserRepository;
 import com.kyuwon.booklog.dto.user.UserLoginData;
 import com.kyuwon.booklog.errors.LoginFailException;
+import com.kyuwon.booklog.errors.LoginNotMatchPasswordException;
 import com.kyuwon.booklog.utils.WebTokenUtil;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,10 @@ public class AuthenticationService {
         String userEmail = userLoginData.getEmail();
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new LoginFailException(userEmail));
+
+        if (!user.authenticate(userLoginData.getPassword())) {
+            throw new LoginNotMatchPasswordException(user.getEmail());
+        }
 
         return webTokenUtil.encode(user.getId());
     }
