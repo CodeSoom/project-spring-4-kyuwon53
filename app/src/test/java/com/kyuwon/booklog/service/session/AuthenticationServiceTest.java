@@ -4,7 +4,9 @@ import com.kyuwon.booklog.domain.user.Role;
 import com.kyuwon.booklog.domain.user.User;
 import com.kyuwon.booklog.domain.user.UserRepository;
 import com.kyuwon.booklog.dto.user.UserLoginData;
+import com.kyuwon.booklog.errors.InvalidTokenException;
 import com.kyuwon.booklog.errors.LoginFailException;
+import com.kyuwon.booklog.utils.WebTokenUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,6 +25,8 @@ public class AuthenticationServiceTest {
     private AuthenticationService authenticationService;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private WebTokenUtil webTokenUtil;
 
     public static final String TOKEN_REGEX = "^[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.?[A-Za-z0-9-_.+/=]*$";
     private static final String EMAIL = "test@test.com";
@@ -97,6 +101,53 @@ public class AuthenticationServiceTest {
                 assertThatThrownBy(
                         () -> authenticationService.login(userWrongLoginData)
                 ).isInstanceOf(LoginFailException.class);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("토큰 파싱은")
+    class Describe_ParseToken {
+        @Nested
+        @DisplayName("유효한 토큰으로 요청하면")
+        class Context_With_Valid_Token {
+            private String validToken;
+            private User givenUser;
+
+            @BeforeEach
+            void setUp() {
+                givenUser = userRepository.save(user);
+
+                validToken = webTokenUtil.encode(givenUser.getId());
+            }
+
+            @Test
+            @DisplayName("회원 식별id를 반환한다. ")
+            void it_return_id() {
+                Long userId = authenticationService.parseToken(validToken);
+                assertThat(userId).isEqualTo(givenUser.getId());
+            }
+        }
+
+        @Nested
+        @DisplayName("인증되지 않은 토큰이 들어오면")
+        class Context_with_Invalid_token {
+            private String invalidToken;
+
+            @BeforeEach
+            void setUp() {
+                User givenUser = userRepository.save(user);
+                String validToken = webTokenUtil.encode(givenUser.getId());
+                invalidToken = validToken + "xx";
+            }
+
+            @Test
+            @DisplayName("인증되지 않은 토큰이라는 에외를 던진다.")
+            void it_return() {
+                assertThatThrownBy(
+                        () -> authenticationService.parseToken(invalidToken)
+                )
+                        .isInstanceOf(InvalidTokenException.class);
             }
         }
     }
