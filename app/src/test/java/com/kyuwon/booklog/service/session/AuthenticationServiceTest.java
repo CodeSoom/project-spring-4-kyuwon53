@@ -6,6 +6,7 @@ import com.kyuwon.booklog.domain.user.UserRepository;
 import com.kyuwon.booklog.dto.user.UserLoginData;
 import com.kyuwon.booklog.errors.InvalidTokenException;
 import com.kyuwon.booklog.errors.LoginFailException;
+import com.kyuwon.booklog.errors.LoginNotMatchPasswordException;
 import com.kyuwon.booklog.utils.WebTokenUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -101,6 +102,27 @@ public class AuthenticationServiceTest {
                 assertThatThrownBy(
                         () -> authenticationService.login(userWrongLoginData)
                 ).isInstanceOf(LoginFailException.class);
+            }
+        }
+        @Nested
+        @DisplayName("잘못된 비밀번호로 요청하면")
+        class Context_with_Wrong_Password {
+            UserLoginData userWrongLoginData;
+
+            @BeforeEach
+            void setLoginData() {
+                userWrongLoginData = UserLoginData.builder()
+                        .email(user.getEmail())
+                        .password("xxx" + user.getPassword())
+                        .build();
+            }
+
+            @Test
+            @DisplayName("비밀번호가 틀리다는 예외를 던진다.")
+            void it_throw_loginFailException() {
+                assertThatThrownBy(
+                        () -> authenticationService.login(userWrongLoginData)
+                ).isInstanceOf(LoginNotMatchPasswordException.class);
             }
         }
     }
