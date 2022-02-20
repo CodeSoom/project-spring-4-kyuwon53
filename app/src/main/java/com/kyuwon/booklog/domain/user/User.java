@@ -110,4 +110,14 @@ public class User extends BaseTimeEntity {
     public void deleted() {
         deleted = true;
     }
+
+    /**
+     * 탈퇴한 사용자가 아니고 비밀번호가 일치하면 true, 그렇지 않으면 false를 리턴한다.
+     *
+     * @param password 사용자 비밀번호
+     * @return 탈퇴한 사용자가 아니고 비밀번호 일치 true, 아니면 false
+     */
+    public boolean authenticate(String password) {
+        return !deleted && password.equals(this.password);
+    }
 }
