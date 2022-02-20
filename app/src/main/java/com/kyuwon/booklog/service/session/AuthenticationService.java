@@ -34,7 +34,7 @@ public class AuthenticationService {
     }
 
     /**
-     * 인증 토큰으로 id(회원 식별자)를 받아 리턴한다.
+     * 인증 토큰을 받아 id(회원 식별자)를 리턴한다.
      *
      * @param accessToken 인증토큰
      * @return 회원 id(식별자)
