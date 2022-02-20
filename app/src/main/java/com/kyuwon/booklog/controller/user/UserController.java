@@ -53,7 +53,7 @@ public class UserController {
     ) {
         String email = userService.getUserEmailById(id);
         User user = userService.updateUser(email, userModifyData);
-        return UserData.toUserData(user);
+        return UserData.of(user);
     }
 
     /**
@@ -67,7 +67,7 @@ public class UserController {
     public UserData delete(@PathVariable Long id) {
         String email = userService.getUserEmailById(id);
         User user = userService.deleteUser(email);
-        return UserData.toUserData(user);
+        return UserData.of(user);
     }
 
     /**
@@ -80,7 +80,7 @@ public class UserController {
     public UserData detail(@PathVariable Long id) {
         String email = userService.getUserEmailById(id);
         User user = userService.detailUser(email);
-        return UserData.toUserData(user);
+        return UserData.of(user);
     }
 
     /**
