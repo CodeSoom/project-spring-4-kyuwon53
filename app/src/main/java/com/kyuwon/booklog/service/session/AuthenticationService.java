@@ -5,6 +5,7 @@ import com.kyuwon.booklog.domain.user.UserRepository;
 import com.kyuwon.booklog.dto.user.UserLoginData;
 import com.kyuwon.booklog.errors.LoginFailException;
 import com.kyuwon.booklog.utils.WebTokenUtil;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,5 +31,16 @@ public class AuthenticationService {
                 .orElseThrow(() -> new LoginFailException(userEmail));
 
         return webTokenUtil.encode(user.getId());
+    }
+
+    /**
+     * 인증 토큰으로 id(회원 식별자)를 받아 리턴한다.
+     *
+     * @param accessToken 인증토큰
+     * @return 회원 id(식별자)
+     */
+    public Long parseToken(String accessToken) {
+        Claims claims = webTokenUtil.decode(accessToken);
+        return claims.get("userId", Long.class);
     }
 }
