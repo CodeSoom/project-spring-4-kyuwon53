@@ -1,9 +1,7 @@
 package com.kyuwon.booklog.filters;
 
 import com.kyuwon.booklog.domain.user.Role;
-import com.kyuwon.booklog.errors.InvalidTokenException;
 import com.kyuwon.booklog.security.UserAuthentication;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -27,19 +25,16 @@ public class AuthenticationFilter extends BasicAuthenticationFilter {
             , HttpServletResponse response
             , FilterChain chain
     ) throws IOException, ServletException {
-        try {
-            String accessToken = parseAuthorizationHeaderFrom(request);
 
-            if (!accessToken.isBlank()) {
-                Authentication authResult = this.getAuthenticationManager().authenticate(
-                        new UserAuthentication(Role.USER, accessToken)
-                );
-                onSuccessfulAuthentication(request, response, authResult);
-            }
-            chain.doFilter(request, response);
-        } catch (InvalidTokenException e) {
-            response.sendError(HttpStatus.UNAUTHORIZED.value());
+        String accessToken = parseAuthorizationHeaderFrom(request);
+
+        if (!accessToken.isBlank()) {
+            Authentication authResult = this.getAuthenticationManager().authenticate(
+                    new UserAuthentication(Role.USER, accessToken)
+            );
+            onSuccessfulAuthentication(request, response, authResult);
         }
+        chain.doFilter(request, response);
     }
 
     @Override
