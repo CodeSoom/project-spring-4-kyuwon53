@@ -104,6 +104,7 @@ public class AuthenticationServiceTest {
                 ).isInstanceOf(LoginFailException.class);
             }
         }
+
         @Nested
         @DisplayName("잘못된 비밀번호로 요청하면")
         class Context_with_Wrong_Password {
@@ -123,6 +124,30 @@ public class AuthenticationServiceTest {
                 assertThatThrownBy(
                         () -> authenticationService.login(userWrongLoginData)
                 ).isInstanceOf(LoginNotMatchPasswordException.class);
+            }
+        }
+
+        @Nested
+        @DisplayName("탈퇴한 회원이")
+        class Context_deleted_user {
+            UserLoginData userDeletedLoginData;
+
+            @BeforeEach
+            void setDeletedUser() {
+                user.deleted();
+
+                userDeletedLoginData = UserLoginData.builder()
+                        .email(user.getEmail())
+                        .email(user.getPassword())
+                        .build();
+            }
+
+            @Test
+            @DisplayName("로그인에 실패했다는 예외를 던진다.")
+            void it_throw_LoginFailException() {
+                assertThatThrownBy(
+                        () -> authenticationService.login(userDeletedLoginData)
+                ).isInstanceOf(LoginFailException.class);
             }
         }
     }
@@ -164,7 +189,7 @@ public class AuthenticationServiceTest {
             }
 
             @Test
-            @DisplayName("인증되지 않은 토큰이라는 에외를 던진다.")
+            @DisplayName("인증되지 않은 토큰이라는 예외를 던진다.")
             void it_return() {
                 assertThatThrownBy(
                         () -> authenticationService.parseToken(invalidToken)
