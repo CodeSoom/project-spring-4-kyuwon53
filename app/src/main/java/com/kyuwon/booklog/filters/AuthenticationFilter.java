@@ -54,6 +54,6 @@ public class AuthenticationFilter extends BasicAuthenticationFilter {
         if (authorization == null) {
             return "";
         }
-        return authorization.substring("Bearer".length());
+        return authorization.substring("Bearer ".length());
     }
 }
