@@ -1,5 +1,6 @@
 package com.kyuwon.booklog.dto.comments;
 
+import com.kyuwon.booklog.domain.comments.Comments;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,5 +37,13 @@ public class CommentsSaveData {
         this.postId = postId;
         this.content = content;
         this.email = email;
+    }
+
+    public Comments toEntity() {
+        return Comments.builder()
+                .email(email)
+                .postId(postId)
+                .content(content)
+                .build();
     }
 }
