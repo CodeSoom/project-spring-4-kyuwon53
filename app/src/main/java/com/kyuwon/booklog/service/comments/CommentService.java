@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * 댓글을 관리한다.
@@ -33,5 +35,16 @@ public class CommentService {
                 .orElseThrow(() -> new PostsNotFoundException(postId));
 
         return commentsRepository.save(commentsSaveData.toEntity());
+    }
+
+    /**
+     * 해당 게시물의 댓글 목록을 리턴한다.
+     *
+     * @param postId 게시물 아이디
+     * @return 댓글 목록
+     */
+    public List<Comments> commentsList(Long postId) {
+
+        return commentsRepository.findAllByPostId(postId);
     }
 }
