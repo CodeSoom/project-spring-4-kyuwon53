@@ -94,7 +94,7 @@ public class CommentService {
     public Comments delete(Long id, String email) {
         Comments comment = getComment(id);
 
-        getPost(comment.getId());
+        getPost(comment.getPostId());
 
         String commentAuthorEmail = comment.getEmail();
 
