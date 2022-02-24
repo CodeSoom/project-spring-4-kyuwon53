@@ -6,11 +6,15 @@ import com.kyuwon.booklog.service.comments.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * 댓글 HTTP 요청을 처리한다.
@@ -32,5 +36,16 @@ public class CommentsController {
     @ResponseStatus(HttpStatus.CREATED)
     public Comments create(@RequestBody CommentsSaveData commentsSaveData) {
         return commentService.save(commentsSaveData);
+    }
+
+    /**
+     * 게시물 id에 해당하는 댓글 목록을 리턴한다.
+     *
+     * @param postId 게시물 id
+     * @return 게시물에 댓글 목록
+     */
+    @GetMapping("/{postId}")
+    public List<Comments> list(@PathVariable Long postId) {
+        return commentService.commentsList(postId);
     }
 }
