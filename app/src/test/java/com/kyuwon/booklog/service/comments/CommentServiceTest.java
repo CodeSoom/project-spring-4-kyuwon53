@@ -3,9 +3,11 @@ package com.kyuwon.booklog.service.comments;
 import com.kyuwon.booklog.domain.comments.Comments;
 import com.kyuwon.booklog.domain.comments.CommentsRepository;
 import com.kyuwon.booklog.domain.posts.Posts;
+import com.kyuwon.booklog.dto.comments.CommentsData;
 import com.kyuwon.booklog.dto.comments.CommentsSaveData;
 import com.kyuwon.booklog.dto.posts.PostsSaveRequestData;
 import com.kyuwon.booklog.errors.PostsNotFoundException;
+import com.kyuwon.booklog.errors.UserEmailNotMatchesException;
 import com.kyuwon.booklog.service.posts.PostsService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class CommentServiceTest {
     private static final String COMMENT_CONTENT = "댓글 내용";
     private static final String EMAIL = "test@email.com";
-
+    private static final String UPDATE_CONTENT = "new댓글 내용";
     private static final String TITLE = "테스트 제목";
     private static final String POST_CONTENT = "테스트 내용";
     private static final String AUTHOR = "테스트 작성자";
@@ -109,6 +111,7 @@ class CommentServiceTest {
                         .hasSize(COUNT);
             }
         }
+
         @Nested
         @DisplayName("게시물에 댓글이 없다면")
         class Context_when_not_exist_comments {
@@ -125,6 +128,90 @@ class CommentServiceTest {
                         .hasSize(0);
                 assertThat(commentService.commentsList(post.getId()))
                         .isEqualTo(new ArrayList<>());
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("댓글 수정은")
+    class Describe_update_comment {
+        Comments comment;
+
+        @BeforeEach
+        void setUp() {
+            comment = commentService.save(getComment(post.getId()));
+        }
+
+        @Nested
+        @DisplayName("해당 게시물이 존재하고 작성자가 일치할 경우")
+        class Context_when_exist_post_matches_email {
+            private CommentsData commentsData;
+
+            @BeforeEach
+            void setUpdatedData() {
+                commentsData = CommentsData.builder()
+                        .comment(UPDATE_CONTENT)
+                        .email(comment.getEmail())
+                        .build();
+            }
+
+            @Test
+            @DisplayName("id에 해당하는 댓글을 수정하고 리턴한다.")
+            void it_return_update_comment() {
+                Long commentId = comment.getId();
+                Comments updatedComment = commentService.update(commentId, commentsData);
+                assertThat(updatedComment.getContent()).isEqualTo(commentsData.getComment());
+            }
+        }
+
+        @Nested
+        @DisplayName("해당 게시물이 존재하지 않을 경우")
+        class Context_when_not_exist_post {
+            private CommentsData commentsData;
+
+            @BeforeEach
+            void cleanPost() {
+                postsService.delete(post.getId());
+            }
+
+            @BeforeEach
+            void setUpdatedData() {
+                commentsData = CommentsData.builder()
+                        .comment(UPDATE_CONTENT)
+                        .email(comment.getEmail())
+                        .build();
+            }
+
+            @Test
+            @DisplayName("게시물을 찾을 수 없다는 예외를 던진다.")
+            void it_throw_PostsNotFoundException() {
+                Long commentId = comment.getId();
+                assertThatThrownBy(
+                        () -> commentService.update(commentId, commentsData))
+                        .isInstanceOf(PostsNotFoundException.class);
+            }
+        }
+
+        @Nested
+        @DisplayName("해당 게시물이 존재하지 않을 경우")
+        class Context_when_not_matches_email {
+            private CommentsData commentsData;
+
+            @BeforeEach
+            void setUpdatedData() {
+                commentsData = CommentsData.builder()
+                        .comment(UPDATE_CONTENT)
+                        .email("xxx" + comment.getEmail())
+                        .build();
+            }
+
+            @Test
+            @DisplayName("이메일이 일치하지 않는 다는 예외를 던진다.")
+            void it_throw_UserEmailNotMatchesException() {
+                Long commentId = comment.getId();
+                assertThatThrownBy(
+                        () -> commentService.update(commentId, commentsData))
+                        .isInstanceOf(UserEmailNotMatchesException.class);
             }
         }
     }
