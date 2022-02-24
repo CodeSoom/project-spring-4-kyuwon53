@@ -5,6 +5,7 @@ import com.kyuwon.booklog.domain.comments.CommentsRepository;
 import com.kyuwon.booklog.domain.posts.Posts;
 import com.kyuwon.booklog.dto.comments.CommentsSaveData;
 import com.kyuwon.booklog.dto.posts.PostsSaveRequestData;
+import com.kyuwon.booklog.errors.PostsNotFoundException;
 import com.kyuwon.booklog.service.posts.PostsService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @DisplayName("댓글 관리")
@@ -63,6 +65,22 @@ class CommentServiceTest {
                 assertThat(comment.getPostId()).isEqualTo(post.getId());
                 assertThat(comment.getContent()).isEqualTo(COMMENT_CONTENT);
                 assertThat(comment.getEmail()).isEqualTo(EMAIL);
+            }
+        }
+
+        @Nested
+        @DisplayName("없는 게시물에 댓글을 작성하면")
+        class Context_when_none_post {
+            @BeforeEach
+            void deletePost() {
+                postsService.delete(post.getId());
+            }
+
+            @Test
+            @DisplayName("찾을 수 없는 게시물이라는 예외를 던진다.")
+            void it_throw_PostsNotFoundException() {
+                assertThatThrownBy(() -> commentService.save(getComment(post.getId())))
+                        .isInstanceOf(PostsNotFoundException.class);
             }
         }
     }
