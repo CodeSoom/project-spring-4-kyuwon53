@@ -1,6 +1,7 @@
 package com.kyuwon.booklog.domain.comments;
 
 import com.kyuwon.booklog.domain.posts.BaseTimeEntity;
+import com.kyuwon.booklog.dto.comments.CommentsData;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -48,5 +49,14 @@ public class Comments extends BaseTimeEntity {
         this.postId = postId;
         this.content = content;
         this.email = email;
+    }
+
+    /**
+     * 수정 내용을 받아 댓글 내용을 수정한다.
+     *
+     * @param commentsData 수정 내용
+     */
+    public void update(CommentsData commentsData) {
+        this.content = commentsData.getComment();
     }
 }
