@@ -6,6 +6,7 @@ import com.kyuwon.booklog.domain.posts.Posts;
 import com.kyuwon.booklog.dto.comments.CommentsData;
 import com.kyuwon.booklog.dto.comments.CommentsSaveData;
 import com.kyuwon.booklog.dto.posts.PostsSaveRequestData;
+import com.kyuwon.booklog.errors.CommentNotFoundException;
 import com.kyuwon.booklog.errors.PostsNotFoundException;
 import com.kyuwon.booklog.errors.UserEmailNotMatchesException;
 import com.kyuwon.booklog.service.posts.PostsService;
@@ -193,7 +194,7 @@ class CommentServiceTest {
         }
 
         @Nested
-        @DisplayName("해당 게시물이 존재하지 않을 경우")
+        @DisplayName("댓글 작성자가 아닌 사용자가 수정을 요청하면")
         class Context_when_not_matches_email {
             private CommentsData commentsData;
 
@@ -212,6 +213,99 @@ class CommentServiceTest {
                 assertThatThrownBy(
                         () -> commentService.update(commentId, commentsData))
                         .isInstanceOf(UserEmailNotMatchesException.class);
+            }
+        }
+
+        @Nested
+        @DisplayName("id에 해당하는 댓글이 없다면")
+        class Context_when_not_exist_comment {
+            @BeforeEach
+            void deleteComment() {
+                commentsRepository.deleteById(comment.getId());
+            }
+
+            @Test
+            @DisplayName("id에 해당하는 댓글이 없다는 예외를 던진다.")
+            void it_throw_CommentNotFoundException() {
+                assertThatThrownBy(
+                        () -> commentService.delete(comment.getId(), comment.getEmail()))
+                        .isInstanceOf(CommentNotFoundException.class);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("댓글 삭제는")
+    class Describe_delete_comment {
+        Comments comment;
+        String requestEmail;
+        Long id;
+
+        @BeforeEach
+        void setUp() {
+            comment = commentService.save(getComment(post.getId()));
+            requestEmail = comment.getEmail();
+            id = comment.getId();
+        }
+
+        @Nested
+        @DisplayName("해당 게시물이 존재하고 작성자가 일치할 경우")
+        class Context_when_exist_post_matches_email {
+
+            @Test
+            @DisplayName("id에 해당하는 댓글을 삭제하고 리턴한다.")
+            void it_return_delete_comment() {
+                Comments deletedComment = commentService.delete(id, requestEmail);
+                assertThat(deletedComment.getId()).isEqualTo(id);
+                assertThat(deletedComment.getEmail()).isEqualTo(requestEmail);
+            }
+        }
+
+        @Nested
+        @DisplayName("해당 게시물이 존재하지 않을 경우")
+        class Context_when_not_exist_post {
+
+            @BeforeEach
+            void cleanPost() {
+                postsService.delete(post.getId());
+            }
+
+            @Test
+            @DisplayName("게시물을 찾을 수 없다는 예외를 던진다.")
+            void it_throw_PostsNotFoundException() {
+                assertThatThrownBy(
+                        () -> commentService.delete(id, requestEmail))
+                        .isInstanceOf(PostsNotFoundException.class);
+            }
+        }
+
+        @Nested
+        @DisplayName("댓글 작성자가 아닌 사용자가 수정을 요청하면")
+        class Context_when_not_matches_email {
+
+            @Test
+            @DisplayName("이메일이 일치하지 않는 다는 예외를 던진다.")
+            void it_throw_UserEmailNotMatchesException() {
+                assertThatThrownBy(
+                        () -> commentService.delete(id, "xx" + requestEmail))
+                        .isInstanceOf(UserEmailNotMatchesException.class);
+            }
+        }
+
+        @Nested
+        @DisplayName("id에 해당하는 댓글이 없다면")
+        class Context_when_not_exist_comment {
+            @BeforeEach
+            void deleteComment() {
+                commentsRepository.deleteById(id);
+            }
+
+            @Test
+            @DisplayName("id에 해당하는 댓글이 없다는 예외를 던진다.")
+            void it_throw_CommentNotFoundException() {
+                assertThatThrownBy(
+                        () -> commentService.delete(id, requestEmail))
+                        .isInstanceOf(CommentNotFoundException.class);
             }
         }
     }
