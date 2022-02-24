@@ -37,7 +37,7 @@ public class Posts extends BaseTimeEntity {
     private String content;
 
     /**
-     * 게시물 작성자
+     * 책 저자
      */
     @Column(nullable = false)
     private String author;
