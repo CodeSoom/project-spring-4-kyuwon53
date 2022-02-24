@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.ArrayList;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -81,6 +83,48 @@ class CommentServiceTest {
             void it_throw_PostsNotFoundException() {
                 assertThatThrownBy(() -> commentService.save(getComment(post.getId())))
                         .isInstanceOf(PostsNotFoundException.class);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("댓글 목록 조회")
+    class Describe_comment_list {
+        @Nested
+        @DisplayName("게시물에 댓글이 존재하면")
+        class Context_when_exist_comments {
+            private static final int COUNT = 10;
+
+            @BeforeEach
+            void setComment() {
+                for (int i = 0; i < COUNT; i++) {
+                    commentService.save(getComment(post.getId()));
+                }
+            }
+
+            @Test
+            @DisplayName("댓글 목록을 리턴한다.")
+            void return_comment_list() {
+                assertThat(commentService.commentsList(post.getId()))
+                        .hasSize(COUNT);
+            }
+        }
+        @Nested
+        @DisplayName("게시물에 댓글이 없다면")
+        class Context_when_not_exist_comments {
+
+            @BeforeEach
+            void deleteComment() {
+                commentsRepository.deleteAll();
+            }
+
+            @Test
+            @DisplayName("댓글 목록을 리턴한다.")
+            void return_comment_list() {
+                assertThat(commentService.commentsList(post.getId()))
+                        .hasSize(0);
+                assertThat(commentService.commentsList(post.getId()))
+                        .isEqualTo(new ArrayList<>());
             }
         }
     }
