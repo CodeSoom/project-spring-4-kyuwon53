@@ -44,14 +44,21 @@ public class CommentService {
      *
      * @param postId 게시물 아이디
      * @return 댓글 목록
-     * @throws UserEmailNotMatchesException 요청 이메일과 댓글 작성자 이메일이 다를 경우
-     * @throws PostsNotFoundException       해당 게시물이 존재하지 않을 경우
      */
     public List<Comments> commentsList(Long postId) {
 
         return commentsRepository.findAllByPostId(postId);
     }
 
+    /**
+     * id에 해당하는 댓글을 수정하고 리턴한다.
+     *
+     * @param id           댓글 식별자
+     * @param commentsData 댓글 수정 내용
+     * @return 수정된 댓글
+     * @throws UserEmailNotMatchesException 요청 이메일과 댓글 작성자 이메일이 다를 경우
+     * @throws PostsNotFoundException       해당 게시물이 존재하지 않을 경우
+     */
     public Comments update(
             Long id,
             CommentsData commentsData) {
