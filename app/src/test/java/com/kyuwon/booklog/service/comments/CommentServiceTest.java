@@ -136,6 +136,7 @@ class CommentServiceTest {
     @Nested
     @DisplayName("댓글 수정은")
     class Describe_update_comment {
+        private CommentsData commentsData;
         Comments comment;
 
         @BeforeEach
@@ -143,18 +144,17 @@ class CommentServiceTest {
             comment = commentService.save(getComment(post.getId()));
         }
 
+        @BeforeEach
+        void setUpdatedData() {
+            commentsData = CommentsData.builder()
+                    .comment(UPDATE_CONTENT)
+                    .email(comment.getEmail())
+                    .build();
+        }
+
         @Nested
         @DisplayName("해당 게시물이 존재하고 작성자가 일치할 경우")
         class Context_when_exist_post_matches_email {
-            private CommentsData commentsData;
-
-            @BeforeEach
-            void setUpdatedData() {
-                commentsData = CommentsData.builder()
-                        .comment(UPDATE_CONTENT)
-                        .email(comment.getEmail())
-                        .build();
-            }
 
             @Test
             @DisplayName("id에 해당하는 댓글을 수정하고 리턴한다.")
@@ -196,11 +196,11 @@ class CommentServiceTest {
         @Nested
         @DisplayName("댓글 작성자가 아닌 사용자가 수정을 요청하면")
         class Context_when_not_matches_email {
-            private CommentsData commentsData;
+            private CommentsData commentsWrongData;
 
             @BeforeEach
             void setUpdatedData() {
-                commentsData = CommentsData.builder()
+                commentsWrongData = CommentsData.builder()
                         .comment(UPDATE_CONTENT)
                         .email("xxx" + comment.getEmail())
                         .build();
@@ -211,7 +211,7 @@ class CommentServiceTest {
             void it_throw_UserEmailNotMatchesException() {
                 Long commentId = comment.getId();
                 assertThatThrownBy(
-                        () -> commentService.update(commentId, commentsData))
+                        () -> commentService.update(commentId, commentsWrongData))
                         .isInstanceOf(UserEmailNotMatchesException.class);
             }
         }
@@ -228,7 +228,7 @@ class CommentServiceTest {
             @DisplayName("id에 해당하는 댓글이 없다는 예외를 던진다.")
             void it_throw_CommentNotFoundException() {
                 assertThatThrownBy(
-                        () -> commentService.delete(comment.getId(), comment.getEmail()))
+                        () -> commentService.update(comment.getId(), commentsData))
                         .isInstanceOf(CommentNotFoundException.class);
             }
         }
@@ -237,9 +237,9 @@ class CommentServiceTest {
     @Nested
     @DisplayName("댓글 삭제는")
     class Describe_delete_comment {
-        Comments comment;
-        String requestEmail;
-        Long id;
+        private Comments comment;
+        private String requestEmail;
+        private Long id;
 
         @BeforeEach
         void setUp() {
@@ -280,7 +280,7 @@ class CommentServiceTest {
         }
 
         @Nested
-        @DisplayName("댓글 작성자가 아닌 사용자가 수정을 요청하면")
+        @DisplayName("댓글 작성자가 아닌 사용자가 삭제를 요청하면")
         class Context_when_not_matches_email {
 
             @Test
