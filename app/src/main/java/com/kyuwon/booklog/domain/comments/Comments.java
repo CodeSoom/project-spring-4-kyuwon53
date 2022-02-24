@@ -11,7 +11,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 
 /**
  * 댓글 정보를 저장하는 객체
@@ -25,18 +24,17 @@ public class Comments extends BaseTimeEntity {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "comment_id")
+    @Column(name = "COMMENT_ID")
     private Long id;
     /**
      * 게시물 아이디
      */
-    @ManyToOne
-    @JoinColumn(name = "post_id")
+    @JoinColumn(name = "POST_ID")
     private Long postId;
     /**
      * 댓글 내용
      */
-    @Column(name = "comment_content", nullable = false)
+    @Column(name = "COMMENT_COMTENT", nullable = false)
     private String content;
     /**
      * 작성자 이메일
