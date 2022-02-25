@@ -7,6 +7,7 @@ import com.kyuwon.booklog.service.comments.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -62,5 +63,12 @@ public class CommentsController {
     public Comments update(@PathVariable Long id,
                            @RequestBody CommentsData commentsUpdateData) {
         return commentService.update(id, commentsUpdateData);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Comments delete(@PathVariable Long id,
+                           @RequestBody String email) {
+        return commentService.delete(id, email);
     }
 }
