@@ -135,7 +135,6 @@ class CommentsControllerTest {
 
         }
 
-
         @Nested
         @DisplayName("게시물이 존재하고 댓글 작성자와 수정 요청자가 일치할 경우")
         class Context_when_exist_post_matches_email {
