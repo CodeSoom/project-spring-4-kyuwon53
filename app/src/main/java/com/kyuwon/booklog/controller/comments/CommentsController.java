@@ -1,12 +1,14 @@
 package com.kyuwon.booklog.controller.comments;
 
 import com.kyuwon.booklog.domain.comments.Comments;
+import com.kyuwon.booklog.dto.comments.CommentsData;
 import com.kyuwon.booklog.dto.comments.CommentsSaveData;
 import com.kyuwon.booklog.service.comments.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -47,5 +49,18 @@ public class CommentsController {
     @GetMapping("/{postId}")
     public List<Comments> list(@PathVariable Long postId) {
         return commentService.commentsList(postId);
+    }
+
+    /**
+     * 요청받은 id의 해당하는 댓글을 수정하고 리턴한다.
+     *
+     * @param id                 수정할 댓글 id
+     * @param commentsUpdateData 댓글 정보
+     * @return 수정된 댓글
+     */
+    @PatchMapping("/{id}")
+    public Comments update(@PathVariable Long id,
+                           @RequestBody CommentsData commentsUpdateData) {
+        return commentService.update(id, commentsUpdateData);
     }
 }
