@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.kyuwon.booklog.domain.comments.Comments;
 import com.kyuwon.booklog.domain.posts.Posts;
+import com.kyuwon.booklog.dto.comments.CommentsData;
 import com.kyuwon.booklog.dto.comments.CommentsSaveData;
 import com.kyuwon.booklog.dto.posts.PostsSaveRequestData;
+import com.kyuwon.booklog.service.comments.CommentService;
 import com.kyuwon.booklog.service.posts.PostsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,10 +25,13 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -35,6 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CommentsControllerTest {
     private static final String EMAIL = "test@test.com";
     private static final String COMMENT = "댓글 테스트 내용";
+    private static final String NEW_COMMENT = "새로운 댓글 테스트 내용";
     @Autowired
     private MockMvc mockMvc;
 
@@ -43,6 +49,9 @@ class CommentsControllerTest {
 
     @Autowired
     private PostsService postsService;
+
+    @Autowired
+    private CommentService commentService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -105,10 +114,129 @@ class CommentsControllerTest {
             @Test
             @DisplayName("댓글 목록을 리턴하고 상태 isOk를 응답한다.")
             void it_response_isOk() throws Exception {
-                mockMvc.perform(get("/comments/"+post.getId()))
+                mockMvc.perform(get("/comments/" + post.getId()))
                         .andExpect(status().isOk())
                         .andExpect(content().string(containsString(COMMENT)))
                         .andDo(print());
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("댓글 수정 요청")
+    class Describe_patch {
+        Comments comments;
+        CommentsData commentsUpdateData;
+
+        @BeforeEach
+        void setComments() throws Exception {
+            comments = prepareComment(getComment(post.getId()));
+
+        }
+
+
+        @Nested
+        @DisplayName("게시물이 존재하고 댓글 작성자와 수정 요청자가 일치할 경우")
+        class Context_when_exist_post_matches_email {
+            @BeforeEach
+            void setUp() {
+                commentsUpdateData = CommentsData.builder()
+                        .id(comments.getId())
+                        .email(comments.getEmail())
+                        .comment(NEW_COMMENT)
+                        .build();
+            }
+
+            @Test
+            @DisplayName("댓글을 수정하고 isOk 응답한다.")
+            void it_update_comment_return() throws Exception {
+                mockMvc.perform(patch("/comments/" + comments.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(commentsUpdateData)))
+                        .andDo(print())
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.content", is(commentsUpdateData.getComment())));
+            }
+        }
+
+        @Nested
+        @DisplayName("해당 게시물이 존재하지 않을 경우")
+        class Context_when_not_exist_post {
+
+            @BeforeEach
+            void deletePost() {
+                postsService.delete(post.getId());
+            }
+
+            @BeforeEach
+            void setUp() {
+                commentsUpdateData = CommentsData.builder()
+                        .id(comments.getId())
+                        .email(comments.getEmail())
+                        .comment(NEW_COMMENT)
+                        .build();
+            }
+
+            @Test
+            @DisplayName("NotFound를 응답한다.")
+            void it_response_NotFound() throws Exception {
+                mockMvc.perform(patch("/comments/" + comments.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(commentsUpdateData)))
+                        .andDo(print())
+                        .andExpect(status().isNotFound());
+            }
+        }
+
+        @Nested
+        @DisplayName("댓글 작성자가 아닌 사용자가 수정 요청시")
+        class Context_when_not_author {
+            private CommentsData commentsNotAuthor;
+
+            @BeforeEach
+            void setWrongData() {
+                commentsNotAuthor = CommentsData.builder()
+                        .id(comments.getId())
+                        .email("xx" + comments.getEmail())
+                        .comment(NEW_COMMENT)
+                        .build();
+            }
+
+            @Test
+            @DisplayName("BadRequest를 응답한다.")
+            void it_response_BadRequest() throws Exception {
+                mockMvc.perform(patch("/comments/" + comments.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(commentsNotAuthor)))
+                        .andDo(print())
+                        .andExpect(status().isBadRequest());
+            }
+        }
+
+        @Nested
+        @DisplayName("해당 댓글이 없다면")
+        class Context_When_no_comment {
+            @BeforeEach
+            void deleteComment() {
+                commentService.delete(comments.getId(), comments.getEmail());
+            }
+
+            @BeforeEach
+            void setUp() {
+                commentsUpdateData = CommentsData.builder()
+                        .id(comments.getId())
+                        .email(comments.getEmail())
+                        .comment(NEW_COMMENT)
+                        .build();
+            }
+
+            @Test
+            @DisplayName("NotFound를 응답한다.")
+            void it_response_NotFound() throws Exception {
+                mockMvc.perform(patch("/comments/" + comments.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(commentsUpdateData)))
+                        .andExpect(status().isNotFound());
             }
         }
     }
