@@ -26,6 +26,7 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -236,6 +237,90 @@ class CommentsControllerTest {
                 mockMvc.perform(patch("/comments/" + comments.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(commentsUpdateData)))
+                        .andExpect(status().isNotFound());
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("댓글 삭제 요청")
+    class Describe_delete_comment {
+        private Comments comment;
+        private String requestEmail;
+        private Long commentId;
+
+        @BeforeEach
+        void setUp() throws Exception {
+            comment = prepareComment(getComment(post.getId()));
+
+            requestEmail = comment.getEmail();
+            commentId = comment.getId();
+        }
+
+        @Nested
+        @DisplayName("게시물이 존재하고 작성자가 일치할 경우")
+        class Context_when_exist_post_matches_email {
+            @Test
+            @DisplayName("isNoContent 상태를 리턴한다.")
+            void it_response_isOk() throws Exception {
+                mockMvc.perform(delete("/comments/" + commentId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(requestEmail))
+                        .andDo(print())
+                        .andExpect(status().isNoContent());
+
+            }
+        }
+
+        @Nested
+        @DisplayName("해당 게시물이 존재하지 않을 경우")
+        class Context_when_not_exist_post {
+
+            @BeforeEach
+            void deletePost() {
+                postsService.delete(post.getId());
+            }
+
+            @Test
+            @DisplayName("NotFound를 응답한다.")
+            void it_response_NotFound() throws Exception {
+                mockMvc.perform(delete("/comments/" + commentId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(requestEmail))
+                        .andDo(print())
+                        .andExpect(status().isNotFound());
+            }
+        }
+
+        @Nested
+        @DisplayName("댓글 작성자가 아닌 사용자가 삭제 요청시")
+        class Context_when_not_author {
+
+            @Test
+            @DisplayName("BadRequest를 응답한다.")
+            void it_response_BadRequest() throws Exception {
+                mockMvc.perform(delete("/comments/" + commentId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("x" + requestEmail))
+                        .andDo(print())
+                        .andExpect(status().isBadRequest());
+            }
+        }
+
+        @Nested
+        @DisplayName("해당 댓글이 없다면")
+        class Context_When_no_comment {
+            @BeforeEach
+            void deleteComment() {
+                commentService.delete(commentId, requestEmail);
+            }
+
+            @Test
+            @DisplayName("NotFound를 응답한다.")
+            void it_response_NotFound() throws Exception {
+                mockMvc.perform(delete("/comments/" + commentId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(requestEmail))
                         .andExpect(status().isNotFound());
             }
         }
