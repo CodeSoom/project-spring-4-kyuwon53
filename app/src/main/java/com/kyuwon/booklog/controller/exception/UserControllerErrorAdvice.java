@@ -1,6 +1,7 @@
 package com.kyuwon.booklog.controller.exception;
 
 import com.kyuwon.booklog.dto.error.ErrorRespose;
+import com.kyuwon.booklog.errors.UserEmailNotMatchesException;
 import com.kyuwon.booklog.errors.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -18,5 +19,11 @@ public class UserControllerErrorAdvice {
     @ExceptionHandler(UserNotFoundException.class)
     public ErrorRespose handleUserNotFound() {
         return new ErrorRespose("User not Found");
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(UserEmailNotMatchesException.class)
+    public ErrorRespose handleUserEmailNotMatches() {
+        return new ErrorRespose("User Email Not Matches");
     }
 }

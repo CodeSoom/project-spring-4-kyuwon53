@@ -1,9 +1,10 @@
 spring:
   datasource:
-    url: jdbc:h2:~/data/booklog
+    url: jdbc:h2:~/data/booklog;AUTO_SERVER=TRUE
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
+    database: h2
 
 jwt:
   secret: thisisabooklogscretkeykyuwonsdfs
