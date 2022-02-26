@@ -172,8 +172,8 @@ class UserControllerTest {
             }
 
             @Test
-            @DisplayName("정보를 수정하고 OK를 응답한다.")
-            void it_response_status_ok() throws Exception {
+            @DisplayName("isUnauthorized를 응답한다.")
+            void it_response_status_isUnauthorized() throws Exception {
                 mockMvc.perform(patch("/users/" + user.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(userUpdatedData))
@@ -230,6 +230,19 @@ class UserControllerTest {
                                 .header("Authorization",
                                         "Bearer " + sessionResponseData.getAccessToken()))
                         .andExpect(status().isNotFound());
+            }
+        }
+        @Nested
+        @DisplayName("잘못된 인증정보로 요청할 경우")
+        class Context_when_wrong_accesstoken {
+
+            @Test
+            @DisplayName("HTTP NoContent를 응답한다.")
+            void it_response_status_isUnauthorized() throws Exception {
+                mockMvc.perform(delete("/users/" + user.getId())
+                                .header("Authorization",
+                                        "Bearer " + sessionResponseData.getAccessToken()+"xx"))
+                        .andExpect(status().isUnauthorized());
             }
         }
     }
