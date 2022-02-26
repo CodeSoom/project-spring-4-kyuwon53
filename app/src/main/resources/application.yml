@@ -5,6 +5,10 @@ spring:
     hibernate:
       ddl-auto: create
     database: h2
+    properties:
+      hibernate:
+        show-sql: true
+        format_sql: true
 
 jwt:
   secret: thisisabooklogscretkeykyuwonsdfs
