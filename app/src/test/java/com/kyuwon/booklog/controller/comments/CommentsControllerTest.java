@@ -114,6 +114,7 @@ class CommentsControllerTest {
                         .andDo(print());
             }
         }
+
         @Nested
         @DisplayName("잘못된 인증정보로 요청할 경우")
         class Context_with_wrong_accessToken {
@@ -129,8 +130,27 @@ class CommentsControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(commentsSaveData))
                                 .header("Authorization",
-                                        "Bearer " + sessionResponseData.getAccessToken()+"xx")
+                                        "Bearer " + sessionResponseData.getAccessToken() + "xx")
                         )
+                        .andExpect(status().isUnauthorized())
+                        .andDo(print());
+            }
+        }
+
+        @Nested
+        @DisplayName("인증정보가 없을 경우")
+        class Context_with_none_accessToken {
+            @BeforeEach
+            void setUp() {
+                commentsSaveData = getComment(post.getId());
+            }
+
+            @Test
+            @DisplayName("isUnauthorized를 응답한다.")
+            void it_return_status_created() throws Exception {
+                mockMvc.perform(post("/comments")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(commentsSaveData)))
                         .andExpect(status().isUnauthorized())
                         .andDo(print());
             }
@@ -148,7 +168,7 @@ class CommentsControllerTest {
             @BeforeEach
             void setComment() throws Exception {
                 for (int i = 0; i < COUNT; i++) {
-                    prepareComment(getComment(post.getId()),sessionResponseData.getAccessToken());
+                    prepareComment(getComment(post.getId()), sessionResponseData.getAccessToken());
                 }
             }
 
@@ -171,7 +191,7 @@ class CommentsControllerTest {
 
         @BeforeEach
         void setComments() throws Exception {
-            comments = prepareComment(getComment(post.getId()),sessionResponseData.getAccessToken());
+            comments = prepareComment(getComment(post.getId()), sessionResponseData.getAccessToken());
 
         }
 
@@ -291,6 +311,7 @@ class CommentsControllerTest {
                         .andExpect(status().isNotFound());
             }
         }
+
         @Nested
         @DisplayName("잘못된 인증정보로 요청할 경우")
         class Context_when_wrong_accesstoken {
@@ -310,8 +331,31 @@ class CommentsControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(commentsUpdateData))
                                 .header("Authorization",
-                                        "Bearer " + sessionResponseData.getAccessToken()+"x")
+                                        "Bearer " + sessionResponseData.getAccessToken() + "x")
                         )
+                        .andDo(print())
+                        .andExpect(status().isUnauthorized());
+            }
+        }
+
+        @Nested
+        @DisplayName("인증정보가 없을 경우")
+        class Context_when_none_accesstoken {
+            @BeforeEach
+            void setUp() {
+                commentsUpdateData = CommentsData.builder()
+                        .id(comments.getId())
+                        .email(comments.getEmail())
+                        .comment(NEW_COMMENT)
+                        .build();
+            }
+
+            @Test
+            @DisplayName("isUnauthorized를 응답한다.")
+            void it_update_comment_return() throws Exception {
+                mockMvc.perform(patch("/comments/" + comments.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(commentsUpdateData)))
                         .andDo(print())
                         .andExpect(status().isUnauthorized());
             }
@@ -327,7 +371,7 @@ class CommentsControllerTest {
 
         @BeforeEach
         void setUp() throws Exception {
-            comment = prepareComment(getComment(post.getId()),sessionResponseData.getAccessToken());
+            comment = prepareComment(getComment(post.getId()), sessionResponseData.getAccessToken());
 
             requestEmail = comment.getEmail();
             commentId = comment.getId();
@@ -412,6 +456,7 @@ class CommentsControllerTest {
                         .andExpect(status().isNotFound());
             }
         }
+
         @Nested
         @DisplayName("잘못된 인증정보로 요청할 경우")
         class Context_when_wrong_accesstoken {
@@ -422,8 +467,23 @@ class CommentsControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(requestEmail)
                                 .header("Authorization",
-                                        "Bearer " + sessionResponseData.getAccessToken()+"xx")
+                                        "Bearer " + sessionResponseData.getAccessToken() + "xx")
                         )
+                        .andDo(print())
+                        .andExpect(status().isUnauthorized());
+
+            }
+        }
+
+        @Nested
+        @DisplayName("인증정보가 없을 경우")
+        class Context_when_none_accesstoken {
+            @Test
+            @DisplayName("isUnauthorized를 응답한다.")
+            void it_response_isOk() throws Exception {
+                mockMvc.perform(delete("/comments/" + commentId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(requestEmail))
                         .andDo(print())
                         .andExpect(status().isUnauthorized());
 
