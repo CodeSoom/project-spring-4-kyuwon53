@@ -163,7 +163,7 @@ class UserControllerTest {
         }
 
         @Nested
-        @DisplayName("유효하지 않은 토큰일 경우")
+        @DisplayName("다른 사람 토큰일 경우")
         class Context_when_invalid_token {
 
             @BeforeEach
@@ -172,7 +172,7 @@ class UserControllerTest {
             }
 
             @Test
-            @DisplayName("isUnauthorized를 응답한다.")
+            @DisplayName("isUnauthorized 응답한다.")
             void it_response_status_isUnauthorized() throws Exception {
                 mockMvc.perform(patch("/users/" + user.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -208,6 +208,8 @@ class UserControllerTest {
             @DisplayName("HTTP NoContent를 응답한다.")
             void it_response_status_NoContent() throws Exception {
                 mockMvc.perform(delete("/users/" + user.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(user.getEmail())
                                 .header("Authorization",
                                         "Bearer " + sessionResponseData.getAccessToken()))
                         .andDo(print())
@@ -227,11 +229,14 @@ class UserControllerTest {
             @DisplayName("찾을 수 없는 사용자라고 예외를 던진다.")
             void it_throw_UserNotFoundException() throws Exception {
                 mockMvc.perform(delete("/users/" + user.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(user.getEmail())
                                 .header("Authorization",
                                         "Bearer " + sessionResponseData.getAccessToken()))
                         .andExpect(status().isNotFound());
             }
         }
+
         @Nested
         @DisplayName("잘못된 인증정보로 요청할 경우")
         class Context_when_wrong_accesstoken {
@@ -240,8 +245,10 @@ class UserControllerTest {
             @DisplayName("HTTP NoContent를 응답한다.")
             void it_response_status_isUnauthorized() throws Exception {
                 mockMvc.perform(delete("/users/" + user.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(user.getEmail())
                                 .header("Authorization",
-                                        "Bearer " + sessionResponseData.getAccessToken()+"xx"))
+                                        "Bearer " + sessionResponseData.getAccessToken() + "xx"))
                         .andExpect(status().isUnauthorized());
             }
         }
