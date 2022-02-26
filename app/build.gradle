@@ -13,6 +13,8 @@ plugins {
     // Spring
     id 'org.springframework.boot' version '2.6.3'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    // Jacoco
+    id 'jacoco'
 }
 
 sourceCompatibility = '1.8'
@@ -30,6 +32,13 @@ repositories {
 }
 
 dependencies {
+    //Junit
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+
+    //AssertJ
+    testImplementation 'org.assertj:assertj-core:3.18.1'
+
     // Jackson for JSON.
     implementation 'com.fasterxml.jackson.core:jackson-core:2.11.3'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.3'
@@ -76,7 +85,38 @@ tasks.named('test') {
     // Use junit platform for unit tests.
     useJUnitPlatform()
 }
+jacoco {
+    toolVersion = '0.8.6'
+}
 
+jacocoTestReport {
+    dependsOn test
+}
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = "CLASS"
+
+            limit {
+                counter = 'LINE'
+                minimum = 1
+            }
+
+            limit {
+                counter = 'BRANCH'
+                minimum = 1
+            }
+
+            excludes = [
+                    "com.kyuwon.booklog.dto.*",
+                    "com.kyuwon.booklog.App",
+                    "com.kyuwon.booklog.controllers.exception.*",
+                    "com.kyuwon.booklog.controllers",
+                    "com.kyuwon.booklog.filters.*"
+            ]
+        }
+    }
+}
 javadoc {
     options.addStringOption("locale", "ko_KR")
     options.addStringOption("encoding", "UTF-8")

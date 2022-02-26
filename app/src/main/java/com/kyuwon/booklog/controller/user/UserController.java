@@ -6,6 +6,7 @@ import com.kyuwon.booklog.dto.user.UserSaveRequestData;
 import com.kyuwon.booklog.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,6 +48,7 @@ public class UserController {
      * @return 수정된 회원
      */
     @PatchMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     UserData update(
             @PathVariable Long id,
             @RequestBody UserData userModifyData
@@ -64,6 +66,7 @@ public class UserController {
      */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("isAuthenticated()")
     public UserData delete(@PathVariable Long id) {
         String email = userService.getUserEmailById(id);
         User user = userService.deleteUser(email);

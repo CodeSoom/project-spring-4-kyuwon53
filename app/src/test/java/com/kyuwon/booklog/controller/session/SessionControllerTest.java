@@ -112,6 +112,29 @@ class SessionControllerTest {
                         .andExpect(status().isBadRequest());
             }
         }
+
+        @Nested
+        @DisplayName("잘못된 비밀번호가 주어지면")
+        class Context_With_wrong_password {
+            private UserLoginData wrongPasswordData;
+
+            @BeforeEach
+            void setData() {
+                wrongPasswordData = UserLoginData.builder()
+                        .email(user.getEmail())
+                        .password(user.getPassword() + "x")
+                        .build();
+            }
+
+            @Test
+            @DisplayName("BadRequest 400을 응답한다.")
+            void it_response_status_400() throws Exception {
+                mockMvc.perform(post("/session")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(wrongPasswordData)))
+                        .andExpect(status().isBadRequest());
+            }
+        }
     }
 
     private UserSaveRequestData getUserSaveData() {

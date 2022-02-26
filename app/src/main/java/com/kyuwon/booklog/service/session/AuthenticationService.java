@@ -4,7 +4,9 @@ import com.kyuwon.booklog.domain.user.User;
 import com.kyuwon.booklog.domain.user.UserRepository;
 import com.kyuwon.booklog.dto.user.UserLoginData;
 import com.kyuwon.booklog.errors.LoginFailException;
+import com.kyuwon.booklog.errors.LoginNotMatchPasswordException;
 import com.kyuwon.booklog.utils.WebTokenUtil;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +31,21 @@ public class AuthenticationService {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new LoginFailException(userEmail));
 
+        if (!user.authenticate(userLoginData.getPassword())) {
+            throw new LoginNotMatchPasswordException(user.getEmail());
+        }
+
         return webTokenUtil.encode(user.getId());
+    }
+
+    /**
+     * 인증 토큰을 받아 id(회원 식별자)를 리턴한다.
+     *
+     * @param accessToken 인증토큰
+     * @return 회원 id(식별자)
+     */
+    public Long parseToken(String accessToken) {
+        Claims claims = webTokenUtil.decode(accessToken);
+        return claims.get("userId", Long.class);
     }
 }
