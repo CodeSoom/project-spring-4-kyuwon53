@@ -104,17 +104,12 @@ class UserControllerTest {
         UserData userUpdatedData;
         User user;
         SessionResponseData sessionResponseData;
-        UserLoginData userLoginData;
 
         @BeforeEach
         void setUser() throws Exception {
             user = prepareUser(getUserSaveData("update"));
-            userLoginData = UserLoginData.builder()
-                    .email(user.getEmail())
-                    .password(user.getPassword())
-                    .build();
 
-            sessionResponseData = login(userLoginData);
+            sessionResponseData = login(getLoginData(user));
         }
 
         @Nested
@@ -196,10 +191,13 @@ class UserControllerTest {
     @DisplayName("사용자 삭제 요청은")
     class Describe_delete {
         User user;
+        SessionResponseData sessionResponseData;
 
         @BeforeEach
         void createUser() throws Exception {
             user = prepareUser(getUserSaveData("delete"));
+
+            sessionResponseData = login(getLoginData(user));
         }
 
         @Nested
@@ -209,7 +207,9 @@ class UserControllerTest {
             @Test
             @DisplayName("HTTP NoContent를 응답한다.")
             void it_response_status_NoContent() throws Exception {
-                mockMvc.perform(delete("/users/" + user.getId()))
+                mockMvc.perform(delete("/users/" + user.getId())
+                                .header("Authorization",
+                                        "Bearer " + sessionResponseData.getAccessToken()))
                         .andDo(print())
                         .andExpect(status().isNoContent());
             }
@@ -226,7 +226,9 @@ class UserControllerTest {
             @Test
             @DisplayName("찾을 수 없는 사용자라고 예외를 던진다.")
             void it_throw_UserNotFoundException() throws Exception {
-                mockMvc.perform(delete("/users/" + user.getId()))
+                mockMvc.perform(delete("/users/" + user.getId())
+                                .header("Authorization",
+                                        "Bearer " + sessionResponseData.getAccessToken()))
                         .andExpect(status().isNotFound());
             }
         }
@@ -357,5 +359,12 @@ class UserControllerTest {
         String content = mvcResult.getResponse().getContentAsString();
 
         return objectMapper.readValue(content, SessionResponseData.class);
+    }
+
+    private UserLoginData getLoginData(User user) {
+        return UserLoginData.builder()
+                .email(user.getEmail())
+                .password(user.getPassword())
+                .build();
     }
 }
