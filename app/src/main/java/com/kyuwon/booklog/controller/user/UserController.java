@@ -67,9 +67,10 @@ public class UserController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("isAuthenticated()")
-    public UserData delete(@PathVariable Long id) {
-        String email = userService.getUserEmailById(id);
-        User user = userService.deleteUser(email);
+    public UserData delete(@PathVariable Long id,
+                           @RequestBody String requestEmail) {
+
+        User user = userService.deleteUser(id, requestEmail);
         return UserData.of(user);
     }
 
