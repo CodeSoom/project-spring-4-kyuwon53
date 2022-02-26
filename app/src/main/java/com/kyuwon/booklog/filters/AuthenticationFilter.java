@@ -2,6 +2,7 @@ package com.kyuwon.booklog.filters;
 
 import com.kyuwon.booklog.domain.user.Role;
 import com.kyuwon.booklog.security.UserAuthentication;
+import com.kyuwon.booklog.service.session.AuthenticationService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -15,8 +16,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class AuthenticationFilter extends BasicAuthenticationFilter {
-    public AuthenticationFilter(AuthenticationManager authenticationManager) {
+    private final AuthenticationService authenticationService;
+
+    public AuthenticationFilter(AuthenticationManager authenticationManager,
+                                AuthenticationService authenticationService) {
         super(authenticationManager);
+        this.authenticationService = authenticationService;
     }
 
     @Override
@@ -29,8 +34,9 @@ public class AuthenticationFilter extends BasicAuthenticationFilter {
         String accessToken = parseAuthorizationHeaderFrom(request);
 
         if (!accessToken.isBlank()) {
+            Long userId = authenticationService.parseToken(accessToken);
             Authentication authResult = this.getAuthenticationManager().authenticate(
-                    new UserAuthentication(Role.USER, accessToken)
+                    new UserAuthentication(Role.USER, accessToken, userId)
             );
             onSuccessfulAuthentication(request, response, authResult);
         }
