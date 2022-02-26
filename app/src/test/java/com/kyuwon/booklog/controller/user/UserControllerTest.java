@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.kyuwon.booklog.domain.user.User;
 import com.kyuwon.booklog.domain.user.UserRepository;
+import com.kyuwon.booklog.dto.session.SessionResponseData;
 import com.kyuwon.booklog.dto.user.UserData;
+import com.kyuwon.booklog.dto.user.UserLoginData;
 import com.kyuwon.booklog.dto.user.UserSaveRequestData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,6 +28,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -62,6 +65,7 @@ class UserControllerTest {
     @BeforeEach
     void setUp() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(wac)
+                .apply(springSecurity())
                 .addFilters(new CharacterEncodingFilter("UTF-8", true))
                 .build();
 
@@ -99,15 +103,24 @@ class UserControllerTest {
     class Describe_update {
         UserData userUpdatedData;
         User user;
+        SessionResponseData sessionResponseData;
+        UserLoginData userLoginData;
 
         @BeforeEach
-        void createUser() throws Exception {
+        void setUser() throws Exception {
             user = prepareUser(getUserSaveData("update"));
+            userLoginData = UserLoginData.builder()
+                    .email(user.getEmail())
+                    .password(user.getPassword())
+                    .build();
+
+            sessionResponseData = login(userLoginData);
         }
 
         @Nested
         @DisplayName("존재하는 사용자일 경우")
         class Context_when_exist_user {
+
             @BeforeEach
             void setUp() {
                 userUpdatedData = getModifyUserData(user.getEmail());
@@ -118,7 +131,11 @@ class UserControllerTest {
             void it_response_status_ok() throws Exception {
                 mockMvc.perform(patch("/users/" + user.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(userUpdatedData)))
+                                .content(objectMapper.writeValueAsString(userUpdatedData))
+                                .header("Authorization",
+                                        String.format("Bearer %s", sessionResponseData.getAccessToken())
+                                )
+                        )
                         .andDo(print())
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.name", is(NEW_NAME)))
@@ -141,8 +158,36 @@ class UserControllerTest {
 
                 mockMvc.perform(patch("/users/" + user.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(userUpdatedData)))
+                                .content(objectMapper.writeValueAsString(userUpdatedData))
+                                .header("Authorization",
+                                        "Bearer " + sessionResponseData.getAccessToken())
+                        )
+                        .andDo(print())
                         .andExpect(status().isNotFound());
+            }
+        }
+
+        @Nested
+        @DisplayName("유효하지 않은 토큰일 경우")
+        class Context_when_invalid_token {
+
+            @BeforeEach
+            void setUp() {
+                userUpdatedData = getModifyUserData(user.getEmail());
+            }
+
+            @Test
+            @DisplayName("정보를 수정하고 OK를 응답한다.")
+            void it_response_status_ok() throws Exception {
+                mockMvc.perform(patch("/users/" + user.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(userUpdatedData))
+                                .header("Authorization",
+                                        String.format("Bearer %s", sessionResponseData.getAccessToken() + "xxxx")
+                                )
+                        )
+                        .andDo(print())
+                        .andExpect(status().isUnauthorized());
             }
         }
     }
@@ -208,7 +253,7 @@ class UserControllerTest {
                         .andDo(print())
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.name", is(NAME)))
-                        .andExpect(jsonPath("$.email", is("detail"+EMAIL)));
+                        .andExpect(jsonPath("$.email", is("detail" + EMAIL)));
             }
         }
 
@@ -303,4 +348,14 @@ class UserControllerTest {
         return objectMapper.readValue(content, User.class);
     }
 
+    private SessionResponseData login(UserLoginData userLoginData) throws Exception {
+        ResultActions actions = mockMvc.perform(post("/session")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userLoginData)));
+
+        MvcResult mvcResult = actions.andReturn();
+        String content = mvcResult.getResponse().getContentAsString();
+
+        return objectMapper.readValue(content, SessionResponseData.class);
+    }
 }
