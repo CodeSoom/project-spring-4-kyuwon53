@@ -5,6 +5,7 @@ import com.kyuwon.booklog.domain.user.UserRepository;
 import com.kyuwon.booklog.dto.user.UserData;
 import com.kyuwon.booklog.dto.user.UserSaveRequestData;
 import com.kyuwon.booklog.errors.UserEmailDuplicationException;
+import com.kyuwon.booklog.errors.UserEmailNotMatchesException;
 import com.kyuwon.booklog.errors.UserNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -52,11 +53,19 @@ public class UserService {
      * @param email          회원 이메일
      * @param userUpdateData 수정할 사용자 정보
      * @return 수정된 사용자
-     * @throws UserNotFoundException 사용자를 찾을 수 없는 경우
+     * @throws UserNotFoundException        사용자를 찾을 수 없는 경우
+     * @throws UserEmailNotMatchesException 요청자와 해당 사용자 이메일이 다를 경우
      */
     public User updateUser(String email, UserData userUpdateData) {
         User user = userRepository.findByEmailAndDeletedIsFalse(email)
                 .orElseThrow(() -> new UserNotFoundException(email));
+
+        String originUserEmail = user.getEmail();
+        String requestEmail = userUpdateData.getEmail();
+
+        if (!originUserEmail.equals(requestEmail)) {
+            throw new UserEmailNotMatchesException(requestEmail);
+        }
 
         user.changeUser(userUpdateData);
         user.encodePassword(userUpdateData.getPassword(), passwordEncoder);
@@ -66,13 +75,22 @@ public class UserService {
     /**
      * 이메일에 해당하는 사용자를 탈퇴 처리하고 리턴한다.
      *
-     * @param email 사용자 이메일
+     * @param id           삭제할 사용자 이메일
+     * @param requestEmail 탈퇴 요청자 이메일
      * @return 삭제된 사용자
-     * @throws UserNotFoundException 사용자를 찾을 수 없는 경우
+     * @throws UserNotFoundException        사용자를 찾을 수 없는 경우
+     * @throws UserEmailNotMatchesException 요청자와 해당 사용자 이메일이 다를 경우
      */
-    public User deleteUser(String email) {
-        User user = userRepository.findByEmailAndDeletedIsFalse(email)
-                .orElseThrow(() -> new UserNotFoundException(email));
+    public User deleteUser(Long id, String requestEmail) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+
+        String originUserEmail = user.getEmail();
+
+        if (!originUserEmail.equals(requestEmail)) {
+            throw new UserEmailNotMatchesException(requestEmail);
+        }
+
         user.deleted();
         return user;
     }
