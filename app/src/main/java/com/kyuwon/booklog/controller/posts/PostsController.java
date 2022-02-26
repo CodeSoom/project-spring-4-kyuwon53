@@ -6,6 +6,7 @@ import com.kyuwon.booklog.dto.posts.PostsUpdateRequestData;
 import com.kyuwon.booklog.service.posts.PostsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -53,6 +54,7 @@ public class PostsController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("isAuthenticated()")
     public Posts create(@RequestBody PostsSaveRequestData requestData) {
         return postsService.save(requestData);
     }
@@ -65,6 +67,7 @@ public class PostsController {
      * @return 수정된 게시물
      */
     @PatchMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public Posts update(@PathVariable Long id,
                         @RequestBody PostsUpdateRequestData requestData) {
         return postsService.update(id, requestData);
@@ -78,6 +81,7 @@ public class PostsController {
      */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("isAuthenticated()")
     public Posts delete(@PathVariable Long id) {
         return postsService.delete(id);
     }
