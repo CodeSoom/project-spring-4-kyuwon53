@@ -4,6 +4,7 @@ import com.kyuwon.booklog.domain.user.User;
 import com.kyuwon.booklog.domain.user.UserRepository;
 import com.kyuwon.booklog.dto.user.UserData;
 import com.kyuwon.booklog.dto.user.UserSaveRequestData;
+import com.kyuwon.booklog.errors.UserEmailNotMatchesException;
 import com.kyuwon.booklog.errors.UserNotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -99,8 +100,8 @@ class UserServiceTest {
         }
 
         @Nested
-        @DisplayName("잘못된 이메일로 수정을 하면")
-        class Context_when_not_match_id {
+        @DisplayName("없는 계정을 수정을 하면")
+        class Context_when_none_id {
 
             @BeforeEach
             void setUp() {
@@ -112,6 +113,18 @@ class UserServiceTest {
             void it_throw_NotFoundUserException() {
                 assertThatThrownBy(() -> userService.updateUser(email, getModifyUserData(email)))
                         .isInstanceOf(UserNotFoundException.class);
+            }
+        }
+
+        @Nested
+        @DisplayName("본인 정보가 아닐 경우")
+        class Context_when_not_match_email {
+
+            @Test
+            @DisplayName("이메일이 일치하지 않는다는 예외를 던진다.")
+            void it_throw_NotFoundUserException() {
+                assertThatThrownBy(() -> userService.updateUser(email, getModifyUserData("xx" + email)))
+                        .isInstanceOf(UserEmailNotMatchesException.class);
             }
         }
     }
@@ -135,7 +148,7 @@ class UserServiceTest {
             @Test
             @DisplayName("탈퇴하고 리턴한다.")
             void it_return_update_user() {
-                User deleteUser = userService.deleteUser(email);
+                User deleteUser = userService.deleteUser(user.getId(), email);
 
                 assertThat(deleteUser.getEmail()).isEqualTo(email);
                 assertThat(deleteUser.getDeleted()).isTrue();
@@ -154,8 +167,20 @@ class UserServiceTest {
             @Test
             @DisplayName("사용자를 찾을 수 없다는 예외를 던진다.")
             void it_throw_NotFoundUserException() {
-                assertThatThrownBy(() -> userService.deleteUser(email))
+                assertThatThrownBy(() -> userService.deleteUser(user.getId(), email))
                         .isInstanceOf(UserNotFoundException.class);
+            }
+        }
+
+        @Nested
+        @DisplayName("사용자 정보와 요청자가 다를 경우")
+        class Context_when_not_matches_email {
+
+            @Test
+            @DisplayName("이메일이 일치하지 않는다는 예외를 던진다.")
+            void it_throw_NotFoundUserException() {
+                assertThatThrownBy(() -> userService.deleteUser(user.getId(), "x" + email))
+                        .isInstanceOf(UserEmailNotMatchesException.class);
             }
         }
     }
@@ -204,7 +229,7 @@ class UserServiceTest {
             @Test
             @DisplayName("사용자를 찾을 수 없다는 예외를 던진다.")
             void it_throw_NotFoundUserException() {
-                assertThatThrownBy(() -> userService.deleteUser(email))
+                assertThatThrownBy(() -> userService.deleteUser(user.getId(), email))
                         .isInstanceOf(UserNotFoundException.class);
             }
         }
