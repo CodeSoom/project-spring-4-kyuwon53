@@ -20,9 +20,8 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         String accessToken = anonymousAuthentication.getAccessToken();
 
         Long userId = authenticationService.parseToken(accessToken);
-        UserAuthentication auth = new UserAuthentication(Role.USER, accessToken, userId);
 
-        return auth;
+        return new UserAuthentication(Role.USER, accessToken, userId);
     }
 
     @Override
