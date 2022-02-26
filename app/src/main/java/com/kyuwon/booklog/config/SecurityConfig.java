@@ -31,15 +31,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        Filter authenticationFilter = new AuthenticationFilter(
-                authenticationManager()
-        );
-
         Filter authenticationErrorFilter = new AuthenticationErrorFilter();
 
         http
                 .csrf().disable()
-                .addFilter(authenticationFilter)
+                .addFilter(authenticationFilter())
                 .addFilterBefore(authenticationErrorFilter,
                         AuthenticationFilter.class)
                 .sessionManagement()
@@ -69,5 +65,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public JwtAuthenticationProvider jwtAuthenticationProvider() {
         return new JwtAuthenticationProvider(authenticationService);
+    }
+
+    @Bean
+    public AuthenticationFilter authenticationFilter() throws Exception {
+        return new AuthenticationFilter(authenticationManager(), authenticationService);
     }
 }

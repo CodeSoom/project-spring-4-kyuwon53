@@ -4,9 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.kyuwon.booklog.domain.comments.Comments;
 import com.kyuwon.booklog.domain.posts.Posts;
+import com.kyuwon.booklog.domain.user.User;
+import com.kyuwon.booklog.domain.user.UserRepository;
 import com.kyuwon.booklog.dto.comments.CommentsData;
 import com.kyuwon.booklog.dto.comments.CommentsSaveData;
 import com.kyuwon.booklog.dto.posts.PostsSaveRequestData;
+import com.kyuwon.booklog.dto.session.SessionResponseData;
+import com.kyuwon.booklog.dto.user.UserLoginData;
+import com.kyuwon.booklog.dto.user.UserSaveRequestData;
 import com.kyuwon.booklog.service.comments.CommentService;
 import com.kyuwon.booklog.service.posts.PostsService;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +31,7 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -53,10 +59,14 @@ class CommentsControllerTest {
 
     @Autowired
     private CommentService commentService;
+    @Autowired
+    private UserRepository userRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private Posts post;
+    private User user;
+    private SessionResponseData sessionResponseData;
 
     @BeforeEach
     public void setPost() {
@@ -64,12 +74,18 @@ class CommentsControllerTest {
     }
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(wac)
+                .apply(springSecurity())
                 .addFilters(new CharacterEncodingFilter("UTF-8", true))
                 .build();
 
         objectMapper.registerModule(new JavaTimeModule());
+        userRepository.deleteAll();
+
+        user = prepareUser(getUserSaveData());
+
+        sessionResponseData = login(getLoginData(user));
     }
 
     @Nested
@@ -90,8 +106,52 @@ class CommentsControllerTest {
             void it_return_status_created() throws Exception {
                 mockMvc.perform(post("/comments")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(commentsSaveData)))
+                                .content(objectMapper.writeValueAsString(commentsSaveData))
+                                .header("Authorization",
+                                        "Bearer " + sessionResponseData.getAccessToken())
+                        )
                         .andExpect(status().isCreated())
+                        .andDo(print());
+            }
+        }
+
+        @Nested
+        @DisplayName("잘못된 인증정보로 요청할 경우")
+        class Context_with_wrong_accessToken {
+            @BeforeEach
+            void setUp() {
+                commentsSaveData = getComment(post.getId());
+            }
+
+            @Test
+            @DisplayName("isUnauthorized를 응답한다.")
+            void it_return_status_created() throws Exception {
+                mockMvc.perform(post("/comments")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(commentsSaveData))
+                                .header("Authorization",
+                                        "Bearer " + sessionResponseData.getAccessToken() + "xx")
+                        )
+                        .andExpect(status().isUnauthorized())
+                        .andDo(print());
+            }
+        }
+
+        @Nested
+        @DisplayName("인증정보가 없을 경우")
+        class Context_with_none_accessToken {
+            @BeforeEach
+            void setUp() {
+                commentsSaveData = getComment(post.getId());
+            }
+
+            @Test
+            @DisplayName("isUnauthorized를 응답한다.")
+            void it_return_status_created() throws Exception {
+                mockMvc.perform(post("/comments")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(commentsSaveData)))
+                        .andExpect(status().isUnauthorized())
                         .andDo(print());
             }
         }
@@ -108,7 +168,7 @@ class CommentsControllerTest {
             @BeforeEach
             void setComment() throws Exception {
                 for (int i = 0; i < COUNT; i++) {
-                    prepareComment(getComment(post.getId()));
+                    prepareComment(getComment(post.getId()), sessionResponseData.getAccessToken());
                 }
             }
 
@@ -131,7 +191,7 @@ class CommentsControllerTest {
 
         @BeforeEach
         void setComments() throws Exception {
-            comments = prepareComment(getComment(post.getId()));
+            comments = prepareComment(getComment(post.getId()), sessionResponseData.getAccessToken());
 
         }
 
@@ -152,7 +212,10 @@ class CommentsControllerTest {
             void it_update_comment_return() throws Exception {
                 mockMvc.perform(patch("/comments/" + comments.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(commentsUpdateData)))
+                                .content(objectMapper.writeValueAsString(commentsUpdateData))
+                                .header("Authorization",
+                                        "Bearer " + sessionResponseData.getAccessToken())
+                        )
                         .andDo(print())
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.content", is(commentsUpdateData.getComment())));
@@ -182,7 +245,10 @@ class CommentsControllerTest {
             void it_response_NotFound() throws Exception {
                 mockMvc.perform(patch("/comments/" + comments.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(commentsUpdateData)))
+                                .content(objectMapper.writeValueAsString(commentsUpdateData))
+                                .header("Authorization",
+                                        "Bearer " + sessionResponseData.getAccessToken())
+                        )
                         .andDo(print())
                         .andExpect(status().isNotFound());
             }
@@ -207,7 +273,10 @@ class CommentsControllerTest {
             void it_response_BadRequest() throws Exception {
                 mockMvc.perform(patch("/comments/" + comments.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(commentsNotAuthor)))
+                                .content(objectMapper.writeValueAsString(commentsNotAuthor))
+                                .header("Authorization",
+                                        "Bearer " + sessionResponseData.getAccessToken())
+                        )
                         .andDo(print())
                         .andExpect(status().isBadRequest());
             }
@@ -235,8 +304,60 @@ class CommentsControllerTest {
             void it_response_NotFound() throws Exception {
                 mockMvc.perform(patch("/comments/" + comments.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(commentsUpdateData)))
+                                .content(objectMapper.writeValueAsString(commentsUpdateData))
+                                .header("Authorization",
+                                        "Bearer " + sessionResponseData.getAccessToken())
+                        )
                         .andExpect(status().isNotFound());
+            }
+        }
+
+        @Nested
+        @DisplayName("잘못된 인증정보로 요청할 경우")
+        class Context_when_wrong_accesstoken {
+            @BeforeEach
+            void setUp() {
+                commentsUpdateData = CommentsData.builder()
+                        .id(comments.getId())
+                        .email(comments.getEmail())
+                        .comment(NEW_COMMENT)
+                        .build();
+            }
+
+            @Test
+            @DisplayName("isUnauthorized를 응답한다.")
+            void it_update_comment_return() throws Exception {
+                mockMvc.perform(patch("/comments/" + comments.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(commentsUpdateData))
+                                .header("Authorization",
+                                        "Bearer " + sessionResponseData.getAccessToken() + "x")
+                        )
+                        .andDo(print())
+                        .andExpect(status().isUnauthorized());
+            }
+        }
+
+        @Nested
+        @DisplayName("인증정보가 없을 경우")
+        class Context_when_none_accesstoken {
+            @BeforeEach
+            void setUp() {
+                commentsUpdateData = CommentsData.builder()
+                        .id(comments.getId())
+                        .email(comments.getEmail())
+                        .comment(NEW_COMMENT)
+                        .build();
+            }
+
+            @Test
+            @DisplayName("isUnauthorized를 응답한다.")
+            void it_update_comment_return() throws Exception {
+                mockMvc.perform(patch("/comments/" + comments.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(commentsUpdateData)))
+                        .andDo(print())
+                        .andExpect(status().isUnauthorized());
             }
         }
     }
@@ -250,7 +371,7 @@ class CommentsControllerTest {
 
         @BeforeEach
         void setUp() throws Exception {
-            comment = prepareComment(getComment(post.getId()));
+            comment = prepareComment(getComment(post.getId()), sessionResponseData.getAccessToken());
 
             requestEmail = comment.getEmail();
             commentId = comment.getId();
@@ -264,7 +385,10 @@ class CommentsControllerTest {
             void it_response_isOk() throws Exception {
                 mockMvc.perform(delete("/comments/" + commentId)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(requestEmail))
+                                .content(requestEmail)
+                                .header("Authorization",
+                                        "Bearer " + sessionResponseData.getAccessToken())
+                        )
                         .andDo(print())
                         .andExpect(status().isNoContent());
 
@@ -285,7 +409,10 @@ class CommentsControllerTest {
             void it_response_NotFound() throws Exception {
                 mockMvc.perform(delete("/comments/" + commentId)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(requestEmail))
+                                .content(requestEmail)
+                                .header("Authorization",
+                                        "Bearer " + sessionResponseData.getAccessToken())
+                        )
                         .andDo(print())
                         .andExpect(status().isNotFound());
             }
@@ -300,7 +427,10 @@ class CommentsControllerTest {
             void it_response_BadRequest() throws Exception {
                 mockMvc.perform(delete("/comments/" + commentId)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content("x" + requestEmail))
+                                .content("x" + requestEmail)
+                                .header("Authorization",
+                                        "Bearer " + sessionResponseData.getAccessToken())
+                        )
                         .andDo(print())
                         .andExpect(status().isBadRequest());
             }
@@ -319,16 +449,56 @@ class CommentsControllerTest {
             void it_response_NotFound() throws Exception {
                 mockMvc.perform(delete("/comments/" + commentId)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(requestEmail))
+                                .content(requestEmail)
+                                .header("Authorization",
+                                        "Bearer " + sessionResponseData.getAccessToken())
+                        )
                         .andExpect(status().isNotFound());
+            }
+        }
+
+        @Nested
+        @DisplayName("잘못된 인증정보로 요청할 경우")
+        class Context_when_wrong_accesstoken {
+            @Test
+            @DisplayName("isUnauthorized를 응답한다.")
+            void it_response_isOk() throws Exception {
+                mockMvc.perform(delete("/comments/" + commentId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(requestEmail)
+                                .header("Authorization",
+                                        "Bearer " + sessionResponseData.getAccessToken() + "xx")
+                        )
+                        .andDo(print())
+                        .andExpect(status().isUnauthorized());
+
+            }
+        }
+
+        @Nested
+        @DisplayName("인증정보가 없을 경우")
+        class Context_when_none_accesstoken {
+            @Test
+            @DisplayName("isUnauthorized를 응답한다.")
+            void it_response_isOk() throws Exception {
+                mockMvc.perform(delete("/comments/" + commentId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(requestEmail))
+                        .andDo(print())
+                        .andExpect(status().isUnauthorized());
+
             }
         }
     }
 
-    private Comments prepareComment(CommentsSaveData commentsSaveData) throws Exception {
+    private Comments prepareComment(CommentsSaveData commentsSaveData, String accessToken) throws Exception {
         ResultActions actions = mockMvc.perform(post("/comments")
                 .content(objectMapper.writeValueAsString(commentsSaveData))
-                .contentType(MediaType.APPLICATION_JSON));
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization",
+                        "Bearer " + accessToken)
+
+        );
 
         MvcResult mvcResult = actions.andReturn();
         ;
@@ -350,6 +520,44 @@ class CommentsControllerTest {
                 .title("테스트 제목")
                 .content("게시물 내용")
                 .author("AUTHOR")
+                .build();
+    }
+
+    private UserSaveRequestData getUserSaveData() {
+        return UserSaveRequestData.builder()
+                .email(EMAIL)
+                .name("이름")
+                .password("password123*")
+                .picture("picture.jpg")
+                .build();
+    }
+
+    private User prepareUser(UserSaveRequestData saveRequestData) throws Exception {
+        ResultActions actions = mockMvc.perform(post("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(saveRequestData)));
+
+        MvcResult mvcResult = actions.andReturn();
+        String content = mvcResult.getResponse().getContentAsString();
+
+        return objectMapper.readValue(content, User.class);
+    }
+
+    private SessionResponseData login(UserLoginData userLoginData) throws Exception {
+        ResultActions actions = mockMvc.perform(post("/session")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userLoginData)));
+
+        MvcResult mvcResult = actions.andReturn();
+        String content = mvcResult.getResponse().getContentAsString();
+
+        return objectMapper.readValue(content, SessionResponseData.class);
+    }
+
+    private UserLoginData getLoginData(User user) {
+        return UserLoginData.builder()
+                .email(user.getEmail())
+                .password(user.getPassword())
                 .build();
     }
 }

@@ -6,6 +6,7 @@ import com.kyuwon.booklog.dto.comments.CommentsSaveData;
 import com.kyuwon.booklog.service.comments.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,6 +38,7 @@ public class CommentsController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("isAuthenticated()")
     public Comments create(@RequestBody CommentsSaveData commentsSaveData) {
         return commentService.save(commentsSaveData);
     }
@@ -60,6 +62,7 @@ public class CommentsController {
      * @return 수정된 댓글
      */
     @PatchMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public Comments update(@PathVariable Long id,
                            @RequestBody CommentsData commentsUpdateData) {
         return commentService.update(id, commentsUpdateData);
@@ -67,6 +70,7 @@ public class CommentsController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("isAuthenticated()")
     public Comments delete(@PathVariable Long id,
                            @RequestBody String email) {
         return commentService.delete(id, email);
