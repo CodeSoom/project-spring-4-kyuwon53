@@ -19,6 +19,7 @@ public class PostsRepositoryTest {
     private static final String TITLE = "테스트 게시글";
     private static final String CONTENT = "테스트 본문";
     private static final String AUTHOR = "테스트 저자";
+    private static final String EMAIL = "test@gmail.com";
 
     @Autowired
     PostsRepository postsRepository;
@@ -40,6 +41,7 @@ public class PostsRepositoryTest {
                         .title(TITLE)
                         .content(CONTENT)
                         .author(AUTHOR)
+                        .email(EMAIL)
                         .build());
             }
 
@@ -70,6 +72,7 @@ public class PostsRepositoryTest {
                         .title(TITLE)
                         .content(CONTENT)
                         .author(AUTHOR)
+                        .email(EMAIL)
                         .build());
 
             }

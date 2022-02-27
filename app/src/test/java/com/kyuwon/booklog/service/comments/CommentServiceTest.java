@@ -323,6 +323,7 @@ class CommentServiceTest {
                 .title(TITLE)
                 .content(POST_CONTENT)
                 .author(AUTHOR)
+                .email("test@gmail.com")
                 .build();
     }
 }

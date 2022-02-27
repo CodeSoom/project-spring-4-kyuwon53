@@ -520,6 +520,7 @@ class CommentsControllerTest {
                 .title("테스트 제목")
                 .content("게시물 내용")
                 .author("AUTHOR")
+                .email("test@email.com")
                 .build();
     }
 
