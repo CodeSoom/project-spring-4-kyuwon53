@@ -19,11 +19,15 @@ public class PostsSaveRequestData {
     @NotBlank
     private String author;
 
+    @NotBlank
+    private String email;
+
     @Builder
-    public PostsSaveRequestData(String title, String content, String author) {
+    public PostsSaveRequestData(String title, String content, String author, String email) {
         this.title = title;
         this.content = content;
         this.author = author;
+        this.email = email;
     }
 
     public Posts toEntity() {
@@ -31,6 +35,7 @@ public class PostsSaveRequestData {
                 .title(title)
                 .content(content)
                 .author(author)
+                .email(email)
                 .build();
     }
 }
