@@ -41,12 +41,18 @@ public class Posts extends BaseTimeEntity {
      */
     @Column(nullable = false)
     private String author;
+    /**
+     * 게시물 작성자
+     */
+    @Column(nullable = false)
+    private String email;
 
     @Builder
-    public Posts(String title, String content, String author) {
+    public Posts(String title, String content, String author, String email) {
         this.title = title;
         this.content = content;
         this.author = author;
+        this.email = email;
     }
 
     /**
