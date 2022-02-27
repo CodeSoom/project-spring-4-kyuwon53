@@ -46,11 +46,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
-@DisplayName("상품 등록 컨트롤러")
+@DisplayName("게시물 등록 컨트롤러")
 class PostsControllerTest {
     private static final String TITLE = "테스트 제목";
     private static final String CONTENT = "테스트 내용";
     private static final String AUTHOR = "테스트 저자";
+    private static final String EMAIL = "test@email.com";
     private static final String NEW_TITLE = "새로운 제목";
     private static final String NEW_CONTENT = "새로운 내용";
 
@@ -411,6 +412,7 @@ class PostsControllerTest {
                 .title(TITLE)
                 .content(CONTENT)
                 .author(AUTHOR)
+                .email(EMAIL)
                 .build();
     }
 
