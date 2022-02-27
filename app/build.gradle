@@ -80,7 +80,9 @@ application {
     // Define the main class for the application.
     mainClass = 'com.kyuwon.booklog.App'
 }
-
+task wrapper(type: Wrapper) {
+    gradleVersion = '0.9'
+}
 tasks.named('test') {
     // Use junit platform for unit tests.
     useJUnitPlatform()
