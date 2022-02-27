@@ -21,7 +21,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class PostsServiceTest {
     private static final String TITLE = "테스트 제목";
     private static final String CONTENT = "테스트 내용";
-    private static final String AUTHOR = "테스트 작성자";
+    private static final String AUTHOR = "책 저자";
+    private static final String EMAIL = "test@gmail.com";
     private static final String NEW_TITLE = "새로운 제목";
     private static final String NEW_CONTENT = "새로운 내용";
 
@@ -251,6 +252,7 @@ class PostsServiceTest {
                 .title(TITLE + suffix)
                 .content(CONTENT)
                 .author(AUTHOR)
+                .email(EMAIL)
                 .build();
     }
 }
