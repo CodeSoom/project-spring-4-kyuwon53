@@ -6,16 +6,33 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const [emailError, setEmailError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
+
   const handleInputEmail = (event) => {
-    setEmail(event.target.value)
+    const emailRegex = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/;
+    const emailValue = event.currentTarget.value;
+    const emailValidation = (!emailValue || (emailRegex.test(emailValue)));
+
+    setEmailError(!emailValidation);
+    setEmail(emailValue)
   }
 
   const handleInputPassword = (event) => {
-    setPassword(event.target.value)
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,20}$/;
+    const passwordValue = event.currentTarget.value;
+    const passwordValidation = (!passwordValue || (passwordRegex.test(passwordValue)));
+
+    setPasswordError(!passwordValidation);
+    setPassword(passwordValue)
   }
 
   const onSubmit = (event) => {
     event.preventDefault();
+
+    if (validation()) {
+      return
+    }
 
     loginUser();
   }
@@ -37,8 +54,16 @@ function Login() {
     return response.data;
   }
 
-  const onClickLogin = () => {
-    console.log("click login");
+  const validation = () => {
+    if (!email) {
+      setEmailError(true);
+    }
+    if (!password) {
+      setPasswordError(true);
+    }
+    if (email && password) {
+      return true
+    }
   }
 
   return (
@@ -55,6 +80,8 @@ function Login() {
               placeholder="이메일을 입력하세요"
               onChange={handleInputEmail}
             />
+            {(email === "") && <div className={styles.invalid}>이메일을 입력하세요. </div>}
+            {emailError && <div className={styles.invalid}>이메일 형식에 맞지 않습니다.</div>}
           </div>
           <div className={styles.inputGroup}>
             <label htmlFor="password">PASSWORD : </label>
@@ -65,6 +92,8 @@ function Login() {
               placeholder="비밀번호를 입력하세요"
               onChange={handleInputPassword}
             />
+            {(password === "") && <div className={styles.invalid}>비밀번호를 입력하세요. </div>}
+            {passwordError && <div className={styles.invalid}>비밀번호 형식에 맞지 않습니다.</div>}
           </div>
           <div>
             <button
