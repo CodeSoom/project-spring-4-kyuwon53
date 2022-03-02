@@ -61,9 +61,6 @@ function Login() {
     if (!password) {
       setPasswordError(true);
     }
-    if (email && password) {
-      return true
-    }
   }
 
   return (
