@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import styles from "./Register.module.css";
+import styles from "./User.module.css";
 
 function RegisterPage() {
   const [name, setName] = useState("");
@@ -15,10 +15,10 @@ function RegisterPage() {
   const [confirmPasswordError, setConfirmPasswordError] = useState(false);
 
   const onNameHandler = (event) => {
-    const nameRegex = /^[가-힣a-zA-Z]{2,}}$/;
+    const nameRegex = /^[가-힣a-zA-Z]{2,}$/;
     const nameValue = event.currentTarget.value;
     const nameValidation = (!nameValue || (nameRegex.test(nameValue)));
-    if (nameValidation) {
+    if (!nameValidation) {
       event.currentTarget.focus();
     }
     setNameError(!nameValidation);
@@ -53,20 +53,20 @@ function RegisterPage() {
   }
   const validation = () => {
     if (!name) {
+      console.log("1")
       setNameError(true);
     }
     if (!password) {
+      console.log("2")
       setPasswordError(true);
     }
     if (!confirmPassword) {
+      console.log("3")
       setConfirmPasswordError(true);
     }
     if (!email) {
+      console.log("4")
       setEmailError(true);
-    }
-
-    if (name && password && confirmPassword && email) {
-      return true;
     }
   }
 
@@ -83,7 +83,9 @@ function RegisterPage() {
 
   const onSubmit = (event) => {
     event.preventDefault()
+    console.log('submit!!');
     if (validation()) {
+      console.log("validation오류")
       return
     }
     registUser();
@@ -91,6 +93,7 @@ function RegisterPage() {
 
   return (
     <div className={styles.container}>
+      <h2>회원가입</h2>
       <form>
         <div className={styles.row}>
           <div className={styles.inputGroup}>
