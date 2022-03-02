@@ -54,3 +54,4 @@ out/
 
 # Log file
 *.log
+node_modules
