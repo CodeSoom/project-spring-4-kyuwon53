@@ -20,18 +20,21 @@ function PostList() {
   if (!posts) return <button onClick={setState}>불러오기</button>;
   return (
     <div>
-      {posts.map((post) => (
-        <div>
-          <ul>
-            <li key={post.id} onClick={() => setPostId(post.id)}>
-              {post.title} ({post.author})
-            </li>
-          </ul>
-          <button onClick={setState}>불러오기</button>
-          {postId && <Post id={postId} />}
-        </div>
-      ))
-      }
+      <h2>모아보기</h2>
+      <div>
+        {posts.map((post) => (
+          <div>
+            <ul>
+              <li key={post.id} onClick={() => setPostId(post.id)}>
+                {post.title} ({post.author})
+              </li>
+            </ul>
+            <button onClick={setState}>불러오기</button>
+            {postId && <Post id={postId} />}
+          </div>
+        ))
+        }
+      </div>
     </div>
   )
 }
