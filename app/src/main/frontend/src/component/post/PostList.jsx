@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import { useAsync } from './useAsync';
 import Post from './Post';
+import { Link } from "react-router-dom";
 
 async function getPosts() {
   const response = await axios.get(
@@ -21,6 +22,7 @@ function PostList() {
   return (
     <div>
       <h2>모아보기</h2>
+      <button><Link to={`/posts`}>글쓰기</Link></button>
       <div>
         {posts.map((post) => (
           <div>
