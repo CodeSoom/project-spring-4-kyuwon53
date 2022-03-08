@@ -1,5 +1,14 @@
 import './App.css';
 import { useEffect, useState } from "react";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route
+} from "react-router-dom";
+import PostList from './component/post/PostList';
+import RegisterPage from './component/user/RegisterPage';
+import Login from './component/user/Login';
+import PostRegist from './component/post/PostRegist';
 
 function App() {
   const [message, setMessage] = useState([]);
@@ -16,19 +25,22 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Router>
+        <Switch>
+          <Route path="/posts">
+            <PostRegist />
+          </Route>
+          <Route path="/postList">
+            <PostList />
+          </Route>
+          <Route path="/sign-up">
+            <RegisterPage />
+          </Route>
+          <Route path="/sign-in">
+            <Login />
+          </Route>
+        </Switch>
+      </Router>
     </div>
   );
 }
