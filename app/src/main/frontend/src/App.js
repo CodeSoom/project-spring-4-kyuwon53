@@ -8,6 +8,7 @@ import {
 import PostList from './component/post/PostList';
 import RegisterPage from './component/user/RegisterPage';
 import Login from './component/user/Login';
+import PostRegist from './component/post/PostRegist';
 
 function App() {
   const [message, setMessage] = useState([]);
@@ -26,6 +27,9 @@ function App() {
     <div className="App">
       <Router>
         <Switch>
+          <Route path="/posts">
+            <PostRegist />
+          </Route>
           <Route path="/postList">
             <PostList />
           </Route>
